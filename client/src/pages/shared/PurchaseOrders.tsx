@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from '../../components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs'
+import { Card, CardContent } from '../../components/ui/card'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { Plus, Eye, Trash2 } from 'lucide-react'
@@ -148,10 +149,6 @@ export default function PurchaseOrders() {
     createMutation.mutate({ items })
   }
 
-  const getProductName = (productId: string) => {
-    return products?.find((p: any) => p.id === productId)?.name || 'Unknown'
-  }
-
   const getProductCost = (productId: string) => {
     return products?.find((p: any) => p.id === productId)?.cost || 0
   }
@@ -180,16 +177,16 @@ export default function PurchaseOrders() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Purchase Orders</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-5xl font-black text-gray-900">Purchase Orders</h1>
+          <p className="text-gray-500 mt-2 text-base font-medium">
             {user?.role === 'ADMIN' ? 'Manage all purchase orders' : 'Your purchase orders'}
           </p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setItems([])}>
+            <Button onClick={() => setItems([])} className="h-10 bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />
               Create Purchase Order
             </Button>
@@ -286,190 +283,199 @@ export default function PurchaseOrders() {
       </div>
 
       {user?.role === 'ADMIN' ? (
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'my')} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="all">All Purchase Orders</TabsTrigger>
-            <TabsTrigger value="my">My Purchase Orders</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'my')} className="space-y-6">
+          <TabsList className="bg-gray-100 border-2 border-gray-200 rounded-xl p-1 h-auto">
+            <TabsTrigger value="all" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:rounded-lg px-4 py-2 font-semibold transition-all">All Purchase Orders</TabsTrigger>
+            <TabsTrigger value="my" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:rounded-lg px-4 py-2 font-semibold transition-all">My Purchase Orders</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="space-y-4">
-            <div className="bg-white rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order Number</TableHead>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {purchaseOrders?.length === 0 ? (
+            <Card className="border-2 border-blue-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+              <div className="h-1.5 w-full bg-blue-500"></div>
+              <CardContent className="pt-6">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No purchase orders found
-                      </TableCell>
+                      <TableHead>Order Number</TableHead>
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ) : (
-                    purchaseOrders?.map((po: any) => (
-                      <TableRow key={po.id}>
-                        <TableCell className="font-medium">{po.orderNumber}</TableCell>
-                        <TableCell>{po.user?.name}</TableCell>
-                        <TableCell>{formatCurrency(po.totalAmount)}</TableCell>
-                        <TableCell>
-                          <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
-                            {po.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>{formatDate(po.createdAt)}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setViewPO(po)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                if (confirm('Are you sure you want to delete this purchase order?')) {
-                                  deleteMutation.mutate(po.id)
-                                }
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                  </TableHeader>
+                  <TableBody>
+                    {purchaseOrders?.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                          No purchase orders found
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    ) : (
+                      purchaseOrders?.map((po: any) => (
+                        <TableRow key={po.id}>
+                          <TableCell className="font-medium">{po.orderNumber}</TableCell>
+                          <TableCell>{po.user?.name}</TableCell>
+                          <TableCell>{formatCurrency(po.totalAmount)}</TableCell>
+                          <TableCell>
+                            <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
+                              {po.status}
+                            </span>
+                          </TableCell>
+                          <TableCell>{formatDate(po.createdAt)}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setViewPO(po)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to delete this purchase order?')) {
+                                    deleteMutation.mutate(po.id)
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </TabsContent>
           <TabsContent value="my" className="space-y-4">
-            <div className="bg-white rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order Number</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {displayedPOs.length === 0 ? (
+            <Card className="border-2 border-blue-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+              <div className="h-1.5 w-full bg-blue-500"></div>
+              <CardContent className="pt-6">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                        No purchase orders found
-                      </TableCell>
+                      <TableHead>Order Number</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ) : (
-                    displayedPOs.map((po: any) => (
-                      <TableRow key={po.id}>
-                        <TableCell className="font-medium">{po.orderNumber}</TableCell>
-                        <TableCell>{formatCurrency(po.totalAmount)}</TableCell>
-                        <TableCell>
-                          <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
-                            {po.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>{formatDate(po.createdAt)}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setViewPO(po)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                if (confirm('Are you sure you want to delete this purchase order?')) {
-                                  deleteMutation.mutate(po.id)
-                                }
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                  </TableHeader>
+                  <TableBody>
+                    {displayedPOs.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          No purchase orders found
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    ) : (
+                      displayedPOs.map((po: any) => (
+                        <TableRow key={po.id}>
+                          <TableCell className="font-medium">{po.orderNumber}</TableCell>
+                          <TableCell>{formatCurrency(po.totalAmount)}</TableCell>
+                          <TableCell>
+                            <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
+                              {po.status}
+                            </span>
+                          </TableCell>
+                          <TableCell>{formatDate(po.createdAt)}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setViewPO(po)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to delete this purchase order?')) {
+                                    deleteMutation.mutate(po.id)
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="bg-white rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order Number</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {displayedPOs.length === 0 ? (
+        <Card className="border-2 border-blue-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+          <div className="h-1.5 w-full bg-blue-500"></div>
+          <CardContent className="pt-6">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    No purchase orders found
-                  </TableCell>
+                  <TableHead>Order Number</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : (
-                displayedPOs.map((po: any) => (
-                  <TableRow key={po.id}>
-                    <TableCell className="font-medium">{po.orderNumber}</TableCell>
-                    <TableCell>{formatCurrency(po.totalAmount)}</TableCell>
-                    <TableCell>
-                      <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
-                        {po.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>{formatDate(po.createdAt)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setViewPO(po)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (confirm('Are you sure you want to delete this purchase order?')) {
-                              deleteMutation.mutate(po.id)
-                            }
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
+              </TableHeader>
+              <TableBody>
+                {displayedPOs.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      No purchase orders found
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ) : (
+                  displayedPOs.map((po: any) => (
+                    <TableRow key={po.id}>
+                      <TableCell className="font-medium">{po.orderNumber}</TableCell>
+                      <TableCell>{formatCurrency(po.totalAmount)}</TableCell>
+                      <TableCell>
+                        <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
+                          {po.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>{formatDate(po.createdAt)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setViewPO(po)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (confirm('Are you sure you want to delete this purchase order?')) {
+                                deleteMutation.mutate(po.id)
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
 
       {viewPO && (
@@ -535,4 +541,3 @@ export default function PurchaseOrders() {
     </div>
   )
 }
-

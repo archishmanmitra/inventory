@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from '../../components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { Plus, Eye, Trash2 } from 'lucide-react'
@@ -150,10 +151,6 @@ export default function Invoices() {
     createMutation.mutate({ items })
   }
 
-  const getProductName = (productId: string) => {
-    return products?.find((p: any) => p.id === productId)?.name || 'Unknown'
-  }
-
   const getProductPrice = (productId: string) => {
     return products?.find((p: any) => p.id === productId)?.price || 0
   }
@@ -182,16 +179,16 @@ export default function Invoices() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Invoices</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-4xl font-bold text-gray-900">Invoices</h1>
+          <p className="text-gray-600 mt-1 text-sm">
             {user?.role === 'ADMIN' ? 'Manage all invoices' : 'Your invoices'}
           </p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setItems([])}>
+            <Button onClick={() => setItems([])} className="h-10 bg-emerald-600 hover:bg-emerald-700">
               <Plus className="h-4 w-4 mr-2" />
               Create Invoice
             </Button>
@@ -288,14 +285,19 @@ export default function Invoices() {
       </div>
 
       {user?.role === 'ADMIN' ? (
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'my')} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="all">All Invoices</TabsTrigger>
-            <TabsTrigger value="my">My Invoices</TabsTrigger>
-          </TabsList>
-          <TabsContent value="all" className="space-y-4">
-            <div className="bg-white rounded-lg border">
-              <Table>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'my')} className="space-y-6">
+      <TabsList className="bg-gray-100 border-2 border-gray-200 rounded-xl p-1 h-auto">
+      <TabsTrigger value="all" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:rounded-lg px-4 py-2 font-semibold transition-all">All Invoices</TabsTrigger>
+      <TabsTrigger value="my" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:rounded-lg px-4 py-2 font-semibold transition-all">My Invoices</TabsTrigger>
+      </TabsList>
+      <TabsContent value="all" className="space-y-4">
+      <Card className="border-2 border-emerald-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+      <div className="h-1.5 w-full bg-emerald-500"></div>
+      <CardHeader className="border-b bg-gray-50">
+        <CardTitle className="text-lg font-bold">All Invoices</CardTitle>
+               </CardHeader>
+              <CardContent className="pt-6">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Invoice Number</TableHead>
@@ -351,12 +353,18 @@ export default function Invoices() {
                     ))
                   )}
                 </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
-          <TabsContent value="my" className="space-y-4">
-            <div className="bg-white rounded-lg border">
-              <Table>
+                 </Table>
+                 </CardContent>
+                 </Card>
+                </TabsContent>
+                <TabsContent value="my" className="space-y-4">
+                <Card className="border-2 border-emerald-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+                <div className="h-1.5 w-full bg-emerald-500"></div>
+                <CardHeader className="border-b bg-gray-50">
+                  <CardTitle className="text-lg font-bold">My Invoices</CardTitle>
+               </CardHeader>
+              <CardContent className="pt-6">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Invoice Number</TableHead>
@@ -410,13 +418,19 @@ export default function Invoices() {
                     ))
                   )}
                 </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
-        </Tabs>
-      ) : (
-        <div className="bg-white rounded-lg border">
-          <Table>
+                 </Table>
+                 </CardContent>
+                 </Card>
+                  </TabsContent>
+                  </Tabs>
+                ) : (
+                <Card className="border-2 border-emerald-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+                <div className="h-1.5 w-full bg-emerald-500"></div>
+                <CardHeader className="border-b bg-gray-50">
+                  <CardTitle className="text-lg font-bold">Invoices</CardTitle>
+           </CardHeader>
+          <CardContent className="pt-6">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Invoice Number</TableHead>
@@ -470,11 +484,12 @@ export default function Invoices() {
                 ))
               )}
             </TableBody>
-          </Table>
-        </div>
-      )}
+             </Table>
+             </CardContent>
+             </Card>
+       )}
 
-      {viewInvoice && (
+       {viewInvoice && (
         <Dialog open={!!viewInvoice} onOpenChange={() => setViewInvoice(null)}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>

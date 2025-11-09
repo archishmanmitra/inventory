@@ -47,45 +47,47 @@ export default function Statistics() {
   })) || []
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Statistics</h1>
-        <p className="text-gray-600 mt-2">View detailed statistics for invoices and purchase orders</p>
+    <div className="space-y-8">
+      <div className="mb-10">
+        <h1 className="text-5xl font-black text-gray-900">Business Statistics</h1>
+        <p className="text-gray-500 mt-2 text-base font-medium">Comprehensive analytics for invoices and purchase orders</p>
       </div>
 
-      <Tabs defaultValue="invoices" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="invoices">Invoice Statistics</TabsTrigger>
-          <TabsTrigger value="purchase-orders">Purchase Order Statistics</TabsTrigger>
+      <Tabs defaultValue="invoices" className="space-y-6">
+        <TabsList className="bg-gray-100 border-2 border-gray-200 rounded-xl p-1 h-auto">
+          <TabsTrigger value="invoices" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:rounded-lg px-4 py-2 font-semibold transition-all">Invoice Statistics</TabsTrigger>
+          <TabsTrigger value="purchase-orders" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:rounded-lg px-4 py-2 font-semibold transition-all">Purchase Order Statistics</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="invoices" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
+        <TabsContent value="invoices" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="border-2 border-emerald-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+              <div className="h-1.5 w-full bg-emerald-500"></div>
               <CardHeader>
-                <CardTitle>Total Invoices</CardTitle>
-                <CardDescription>Overall invoice statistics</CardDescription>
+                <CardTitle className="text-lg font-bold">Total Invoices</CardTitle>
+                <CardDescription className="font-medium text-emerald-600">Overall invoice statistics</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{invoiceStats?.totalInvoices || 0}</div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Total Revenue: {formatCurrency(invoiceStats?.totalRevenue || 0)}
+                <div className="text-4xl font-black text-emerald-600">{invoiceStats?.totalInvoices || 0}</div>
+                <p className="text-sm font-semibold text-gray-600 mt-3">
+                  Total Revenue: <span className="text-emerald-600 font-bold">{formatCurrency(invoiceStats?.totalRevenue || 0)}</span>
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-2 border-orange-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+              <div className="h-1.5 w-full bg-orange-500"></div>
               <CardHeader>
-                <CardTitle>Status Breakdown</CardTitle>
-                <CardDescription>Invoices by status</CardDescription>
+                <CardTitle className="text-lg font-bold">Status Breakdown</CardTitle>
+                <CardDescription className="font-medium text-orange-600">Invoices by status</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {invoiceStats?.invoicesByStatus?.map((item: any) => (
-                    <div key={item.status} className="flex justify-between">
-                      <span className="capitalize">{item.status}</span>
-                      <span className="font-medium">
-                        {item._count.id} ({formatCurrency(item._sum.totalAmount)})
+                    <div key={item.status} className="flex justify-between items-center p-2.5 bg-orange-50 rounded-lg border border-orange-200">
+                      <span className="capitalize font-semibold text-gray-800">{item.status}</span>
+                      <span className="font-bold text-orange-600">
+                        {item._count.id} • {formatCurrency(item._sum.totalAmount)}
                       </span>
                     </div>
                   ))}
@@ -94,30 +96,34 @@ export default function Statistics() {
             </Card>
           </div>
 
-          <Card>
+          <Card className="border-2 border-blue-200 shadow-lg rounded-2xl overflow-hidden">
+            <div className="h-1.5 w-full bg-blue-500"></div>
             <CardHeader>
-              <CardTitle>Invoices by Status</CardTitle>
+              <CardTitle className="text-lg font-bold">Invoices by Status</CardTitle>
+              <CardDescription className="font-medium text-blue-600">Visual breakdown of invoice distribution</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={invoiceChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="status" />
-                  <YAxis />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="status" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip contentStyle={{ backgroundColor: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '8px' }} />
                   <Legend />
-                  <Bar dataKey="count" fill="#8884d8" name="Count" />
-                  <Bar dataKey="amount" fill="#82ca9d" name="Amount" />
+                  <Bar dataKey="count" fill="#10b981" name="Count" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="amount" fill="#3b82f6" name="Amount" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 border-purple-200 shadow-lg rounded-2xl overflow-hidden">
+            <div className="h-1.5 w-full bg-purple-500"></div>
             <CardHeader>
-              <CardTitle>Invoices by Employee</CardTitle>
+              <CardTitle className="text-lg font-bold">Invoices by Employee</CardTitle>
+              <CardDescription className="font-medium text-purple-600">Employee invoice performance</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -141,11 +147,13 @@ export default function Statistics() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 border-teal-200 shadow-lg rounded-2xl overflow-hidden">
+            <div className="h-1.5 w-full bg-teal-500"></div>
             <CardHeader>
-              <CardTitle>Recent Invoices</CardTitle>
+              <CardTitle className="text-lg font-bold">Recent Invoices</CardTitle>
+              <CardDescription className="font-medium text-teal-600">Latest invoice activity</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -163,7 +171,7 @@ export default function Statistics() {
                       <TableCell>{invoice.user?.name}</TableCell>
                       <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
                       <TableCell>
-                        <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
+                        <span className="px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-700 capitalize font-semibold">
                           {invoice.status}
                         </span>
                       </TableCell>
@@ -176,33 +184,35 @@ export default function Statistics() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="purchase-orders" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
+        <TabsContent value="purchase-orders" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="border-2 border-blue-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+              <div className="h-1.5 w-full bg-blue-500"></div>
               <CardHeader>
-                <CardTitle>Total Purchase Orders</CardTitle>
-                <CardDescription>Overall purchase order statistics</CardDescription>
+                <CardTitle className="text-lg font-bold">Total Purchase Orders</CardTitle>
+                <CardDescription className="font-medium text-blue-600">Overall purchase order statistics</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{poStats?.totalPurchaseOrders || 0}</div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Total Cost: {formatCurrency(poStats?.totalCost || 0)}
+                <div className="text-4xl font-black text-blue-600">{poStats?.totalPurchaseOrders || 0}</div>
+                <p className="text-sm font-semibold text-gray-600 mt-3">
+                  Total Cost: <span className="text-blue-600 font-bold">{formatCurrency(poStats?.totalCost || 0)}</span>
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-2 border-cyan-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+              <div className="h-1.5 w-full bg-cyan-500"></div>
               <CardHeader>
-                <CardTitle>Status Breakdown</CardTitle>
-                <CardDescription>Purchase orders by status</CardDescription>
+                <CardTitle className="text-lg font-bold">Status Breakdown</CardTitle>
+                <CardDescription className="font-medium text-cyan-600">Purchase orders by status</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {poStats?.purchaseOrdersByStatus?.map((item: any) => (
-                    <div key={item.status} className="flex justify-between">
-                      <span className="capitalize">{item.status}</span>
-                      <span className="font-medium">
-                        {item._count.id} ({formatCurrency(item._sum.totalAmount)})
+                    <div key={item.status} className="flex justify-between items-center p-2.5 bg-cyan-50 rounded-lg border border-cyan-200">
+                      <span className="capitalize font-semibold text-gray-800">{item.status}</span>
+                      <span className="font-bold text-cyan-600">
+                        {item._count.id} • {formatCurrency(item._sum.totalAmount)}
                       </span>
                     </div>
                   ))}
@@ -211,30 +221,34 @@ export default function Statistics() {
             </Card>
           </div>
 
-          <Card>
+          <Card className="border-2 border-indigo-200 shadow-lg rounded-2xl overflow-hidden">
+            <div className="h-1.5 w-full bg-indigo-500"></div>
             <CardHeader>
-              <CardTitle>Purchase Orders by Status</CardTitle>
+              <CardTitle className="text-lg font-bold">Purchase Orders by Status</CardTitle>
+              <CardDescription className="font-medium text-indigo-600">Visual breakdown of purchase order distribution</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={poChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="status" />
-                  <YAxis />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="status" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip contentStyle={{ backgroundColor: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '8px' }} />
                   <Legend />
-                  <Bar dataKey="count" fill="#8884d8" name="Count" />
-                  <Bar dataKey="amount" fill="#82ca9d" name="Amount" />
+                  <Bar dataKey="count" fill="#0ea5e9" name="Count" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="amount" fill="#6366f1" name="Amount" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 border-violet-200 shadow-lg rounded-2xl overflow-hidden">
+            <div className="h-1.5 w-full bg-violet-500"></div>
             <CardHeader>
-              <CardTitle>Purchase Orders by Employee</CardTitle>
+              <CardTitle className="text-lg font-bold">Purchase Orders by Employee</CardTitle>
+              <CardDescription className="font-medium text-violet-600">Employee purchase order performance</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -258,11 +272,13 @@ export default function Statistics() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 border-gray-200 shadow-lg rounded-2xl overflow-hidden">
+            <div className="h-1.5 w-full bg-gray-400"></div>
             <CardHeader>
-              <CardTitle>Recent Purchase Orders</CardTitle>
+              <CardTitle className="text-lg font-bold">Recent Purchase Orders</CardTitle>
+              <CardDescription className="font-medium text-gray-600">Latest purchase order activity</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <Table>
                 <TableHeader>
                   <TableRow>

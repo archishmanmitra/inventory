@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../../components/ui/dialog'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import {
@@ -28,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../components/ui/select'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Plus, Edit, Trash2, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '../../lib/utils'
 
@@ -111,16 +112,16 @@ export default function Employees() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-8">
+      <div className="flex justify-between items-center mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Employee Management</h1>
-          <p className="text-gray-600 mt-2">Manage your employees</p>
+          <h1 className="text-5xl font-black text-gray-900">Team Management</h1>
+          <p className="text-gray-500 mt-2 text-base font-medium">Manage your employees and team members</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditingUser(null)}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button onClick={() => setEditingUser(null)} className="h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl flex items-center gap-2 shadow-lg hover:shadow-xl transition-all">
+              <Plus className="h-5 w-5" />
               Add Employee
             </Button>
           </DialogTrigger>
@@ -197,19 +198,32 @@ export default function Employees() {
         </Dialog>
       </div>
 
-      <div className="bg-white rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Invoices</TableHead>
-              <TableHead>Purchase Orders</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+      <Card className="border-2 border-blue-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+        <div className="h-1.5 w-full bg-blue-500"></div>
+        <CardHeader className="border-b bg-blue-50">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl font-bold text-gray-900">Team Members</CardTitle>
+              <p className="text-sm text-blue-600 font-medium mt-1">{users?.length || 0} total employees</p>
+            </div>
+            <div className="p-3 bg-blue-100 rounded-2xl">
+              <Users className="h-6 w-6 text-blue-600" />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-gray-200 hover:bg-gray-50">
+                <TableHead className="text-gray-700 font-semibold">Name</TableHead>
+                <TableHead className="text-gray-700 font-semibold">Email</TableHead>
+                <TableHead className="text-gray-700 font-semibold">Role</TableHead>
+                <TableHead className="text-gray-700 font-semibold">Created</TableHead>
+                <TableHead className="text-gray-700 font-semibold text-center">Invoices</TableHead>
+                <TableHead className="text-gray-700 font-semibold text-center">Purchase Orders</TableHead>
+                <TableHead className="text-gray-700 font-semibold text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
           <TableBody>
             {users?.map((user: any) => (
               <TableRow key={user.id}>
@@ -251,9 +265,10 @@ export default function Employees() {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
-      </div>
-    </div>
-  )
+           </Table>
+           </CardContent>
+           </Card>
+           </div>
+           )
 }
 

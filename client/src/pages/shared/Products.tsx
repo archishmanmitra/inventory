@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../../components/ui/dialog'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { Plus, Edit, Trash2 } from 'lucide-react'
@@ -107,19 +108,19 @@ export default function Products() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600 mt-2">Manage your product catalog</p>
-        </div>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingProduct(null)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Product
-            </Button>
-          </DialogTrigger>
+  <div className="space-y-6">
+  <div className="flex justify-between items-center mb-8">
+  <div>
+  <h1 className="text-5xl font-black text-gray-900">Products</h1>
+  <p className="text-gray-500 mt-2 text-base font-medium">Manage your product catalog</p>
+  </div>
+  <Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogTrigger asChild>
+  <Button onClick={() => setEditingProduct(null)} className="h-10 bg-purple-600 hover:bg-purple-700">
+  <Plus className="h-4 w-4 mr-2" />
+  Add Product
+  </Button>
+  </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleSubmit}>
               <DialogHeader>
@@ -223,19 +224,24 @@ export default function Products() {
         </Dialog>
       </div>
 
-      <div className="bg-white rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Barcode</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Cost</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Unit</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+      <Card className="border-2 border-purple-200 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+      <div className="h-1.5 w-full bg-purple-500"></div>
+      <CardHeader className="border-b bg-gray-50">
+        <CardTitle className="text-lg font-bold">Product Catalog</CardTitle>
+         </CardHeader>
+        <CardContent className="pt-6">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-gray-200 hover:bg-gray-50">
+                <TableHead className="text-gray-700 font-semibold">Name</TableHead>
+                <TableHead className="text-gray-700 font-semibold">Barcode</TableHead>
+                <TableHead className="text-gray-700 font-semibold text-right">Price</TableHead>
+                <TableHead className="text-gray-700 font-semibold text-right">Cost</TableHead>
+                <TableHead className="text-gray-700 font-semibold text-center">Stock</TableHead>
+                <TableHead className="text-gray-700 font-semibold">Unit</TableHead>
+                <TableHead className="text-gray-700 font-semibold text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
           <TableBody>
             {products?.map((product: any) => (
               <TableRow key={product.id}>
@@ -277,9 +283,10 @@ export default function Products() {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
-      </div>
-    </div>
-  )
+          </Table>
+           </CardContent>
+           </Card>
+           </div>
+           )
 }
 

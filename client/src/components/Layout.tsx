@@ -100,7 +100,7 @@ export default function Layout({ children, role }: LayoutProps) {
           </div>
           <Button
             variant="ghost"
-            className="w-full justify-start text-gray-700 hover:bg-gray-100"
+            className="w-full justify-start text-gray-700 hover:text-gray-100"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 mr-2" />
