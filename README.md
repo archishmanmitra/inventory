@@ -219,28 +219,54 @@ npm run preview  # Preview production build
 
 ## Production Deployment
 
-1. Build the frontend:
-```bash
-cd client
-npm run build
-```
+### Quick Start
 
-2. Build the backend:
+1. **Backend Setup:**
 ```bash
 cd server
-npm run build
-```
-
-3. Set environment variables in production
-4. Run database migrations:
-```bash
+npm install
+cp .env.example .env
+# Edit .env with your production values
+npx prisma generate
 npx prisma migrate deploy
-```
-
-5. Start the server:
-```bash
+npm run build
 npm start
 ```
+
+2. **Frontend Setup:**
+```bash
+cd client
+npm install
+# Create .env.production with: VITE_API_URL=https://api.yourdomain.com
+npm run build
+# Deploy the dist/ folder to your hosting service
+```
+
+### Environment Variables
+
+**Frontend (`client/.env.production`):**
+```env
+VITE_API_URL=https://api.yourdomain.com
+```
+
+**Backend (`server/.env`):**
+```env
+DATABASE_URL="postgresql://user:password@host:5432/database?sslmode=require"
+JWT_SECRET="your-secret-key-change-this-in-production"
+PORT=5000
+NODE_ENV=production
+CORS_ORIGIN="https://yourdomain.com"
+LOG_LEVEL="info"
+```
+
+### Important Notes
+
+- **Frontend:** Vite environment variables must be prefixed with `VITE_` and are embedded at build time
+- **Backend:** Environment variables are read at runtime from `.env` file
+- **API URL:** In development, uses Vite proxy. In production, must set `VITE_API_URL`
+- **CORS:** Backend `CORS_ORIGIN` must match your frontend domain
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ## License
 

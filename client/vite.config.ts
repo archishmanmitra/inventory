@@ -12,12 +12,15 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-      },
-    },
+    // Proxy only used in development when VITE_API_URL is not set
+    proxy: process.env.VITE_API_URL
+      ? undefined
+      : {
+          '/api': {
+            target: 'http://localhost:5000',
+            changeOrigin: true,
+          },
+        },
   },
 })
 
