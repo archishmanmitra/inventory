@@ -46,13 +46,79 @@ model Product {
 }
 
 model Invoice {
-  id          String   @id @default(cuid())
-  invoiceNumber String @unique
-  userId      String
-  totalAmount Float
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  invoiceNumber         String?   @unique
+  userId                String
+  
+  // Tax Invoice Details (Left Box 1)
+  taxInvNo              String?
+  taxInvDate            DateTime?
+  chalanNo              String?
+  chalanDate            DateTime?
+  orderNo               String?
+  orderDate             DateTime?
+  paymentTerm           String?
+  dueOn                 DateTime?
+  brokerName            String?
+  
+  // IRN (between boxes)
+  irn                   String?
+  
+  // Billed To (Left Box 2)
+  billedToName          String?
+  billedToAddress       String?
+  billedToState         String?
+  billedToGSTIN         String?
+  billedToPANo          String?
+  
+  // Transporter Details (Right Box 1)
+  transporterName       String?
+  lrNo                  String?
+  lrDate                DateTime?
+  vehicleNo             String?
+  placeOfSupply         String?
+  from                  String?
+  to                    String?
+  noOfBoxes             String?
+  
+  // ACK No (Right)
+  ackNo                 String?
+  
+  // Shipped To (Right Box 2)
+  shippedToName         String?
+  shippedToAddress      String?
+  shippedToState        String?
+  shippedToGSTIN        String?
+  shippedToPANo         String?
+  
+  // Product Details Flags
+  discountEnabled       Boolean  @default(false)
+  discountRate          Float    @default(0)
+  igstEnabled           Boolean  @default(false)
+  igstRate              Float    @default(18)
+  sgstEnabled           Boolean  @default(false)
+  sgstRate              Float    @default(9)
+  cgstEnabled           Boolean  @default(false)
+  cgstRate              Float    @default(9)
+  
+  // Bank Details
+  bankDetails           String?
+  branch                String?
+  rtgsNeftIfscCode      String?
+  
+  // Terms & Conditions
+  termsAndConditions    String?
+  
+  // Totals
+  totalAmount           Float?
+  discountAmount        Float?  @default(0)
+  sgstAmount            Float?   @default(0)
+  cgstAmount            Float?   @default(0)
+  igstAmount            Float?   @default(0)
+  netAmount             Float?
+  status                String   @default("pending")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   items InvoiceItem[]
@@ -61,13 +127,16 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id        String   @id @default(cuid())
-  invoiceId String
-  productId String
-  quantity  Int
-  price     Float
-  subtotal  Float
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  invoiceId       String
+  productId       String
+  quantity        Int
+  price           Float
+  subtotal        Float
+  description     String?
+  hsnCode         String?
+  per             String?  @default("pcs")
+  createdAt       DateTime @default(now())
 
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])

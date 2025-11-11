@@ -18,7 +18,12 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
+    // Check for token in Authorization header or query parameter
+    let token = req.headers.authorization?.replace('Bearer ', '');
+    
+    if (!token) {
+      token = req.query.token as string;
+    }
 
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });

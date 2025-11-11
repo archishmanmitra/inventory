@@ -2,12 +2,40 @@ import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { body, validationResult } from 'express-validator';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
+import fs from 'fs';
+import path from 'path';
+import puppeteer from 'puppeteer';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// Letterhead data
+const LETTERHEAD = {
+  companyName: 'M/S ROY ENTERPRISE',
+  tagline: 'AN ISO 9001:2015 & 45001:2018 CERTIFIED CO. (MSME REGISTERED CO.)',
+  address: 'OFFICE: 37/2 KAMINI SCHOOL LANE, SALKIA, HOWRAH - 711 106 (WEST BENGAL)',
+  contact: '(+91)9831061571',
+  email: 'msroyenterpriseindia@gmail.com',
+  gstin: '19AZEPR3832Q1ZL',
+  logoPath: 'assets/letterhead.png', // Path to logo file
+};
+
+// Load logo as base64
+function getLogoBase64(): string {
+  try {
+    const logoPath = path.join(process.cwd(), LETTERHEAD.logoPath);
+    if (fs.existsSync(logoPath)) {
+      const logoBuffer = fs.readFileSync(logoPath);
+      return `data:image/png;base64,${logoBuffer.toString('base64')}`;
+    }
+  } catch (error) {
+    console.error('Error loading logo:', error);
+  }
+  return '';
+}
+
 // Get all invoices (Admin sees all, Employee sees own)
-router.get('/', authenticate, async (req: AuthRequest, res) => {
+router.get('/',  async (req: AuthRequest, res) => {
   try {
     const where: any = {};
 
@@ -42,7 +70,13 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    res.json(invoices);
+    // Format response to include net amount if not present
+    const formattedInvoices = invoices.map((inv: any) => ({
+      ...inv,
+      totalAmount: inv.netAmount || inv.totalAmount,
+    }));
+
+    res.json(formattedInvoices);
   } catch (error) {
     console.error('Get invoices error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -50,7 +84,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get single invoice
-router.get('/:id', authenticate, async (req: AuthRequest, res) => {
+router.get('/:id', async (req: AuthRequest, res) => {
   try {
     const where: any = { id: req.params.id };
 
@@ -105,14 +139,66 @@ router.post(
     body('items.*.productId').notEmpty(),
     body('items.*.quantity').isInt({ min: 1 }),
   ],
-  async (req: AuthRequest, res) => {
+  async (req: AuthRequest, res: any) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { items } = req.body;
+      const {
+        items,
+        // Tax Invoice Details
+        taxInvNo,
+        taxInvDate,
+        chalanNo,
+        chalanDate,
+        orderNo,
+        orderDate,
+        paymentTerm,
+        dueOn,
+        brokerName,
+        // IRN
+        irn,
+        // Billed To
+        billedToName,
+        billedToAddress,
+        billedToState,
+        billedToGSTIN,
+        billedToPANo,
+        // Transporter
+        transporterName,
+        lrNo,
+        lrDate,
+        vehicleNo,
+        placeOfSupply,
+        from,
+        to,
+        noOfBoxes,
+        // ACK
+        ackNo,
+        // Shipped To
+        shippedToName,
+        shippedToAddress,
+        shippedToState,
+        shippedToGSTIN,
+        shippedToPANo,
+        // Tax settings
+        discountEnabled = false,
+        discountRate = 0,
+        igstEnabled = false,
+        igstRate = 18,
+        sgstEnabled = false,
+        sgstRate = 9,
+        cgstEnabled = false,
+        cgstRate = 9,
+        // Bank Details
+        bankDetails,
+        branch,
+        rtgsNeftIfscCode,
+        // Terms
+        termsAndConditions,
+      } = req.body;
 
       // Generate invoice number
       const count = await prisma.invoice.count();
@@ -138,23 +224,93 @@ router.post(
           });
         }
 
-        const subtotal = product.price * item.quantity;
+        const price = item.price || product.price;
+        const subtotal = price * item.quantity;
         totalAmount += subtotal;
 
         invoiceItems.push({
           productId: product.id,
           quantity: item.quantity,
-          price: product.price,
+          price,
           subtotal,
+          description: item.description || product.name,
+          hsnCode: item.hsnCode || '',
+          per: item.per || product.unit || 'pcs',
         });
       }
+
+      // Calculate discount
+      const discountAmount = discountEnabled ? (totalAmount * discountRate) / 100 : 0;
+      const subtotalAfterDiscount = totalAmount - discountAmount;
+
+      // Calculate taxes
+      const sgstAmount = sgstEnabled ? (subtotalAfterDiscount * sgstRate) / 100 : 0;
+      const cgstAmount = cgstEnabled ? (subtotalAfterDiscount * cgstRate) / 100 : 0;
+      const igstAmount = igstEnabled ? (subtotalAfterDiscount * igstRate) / 100 : 0;
+      const netAmount = subtotalAfterDiscount + sgstAmount + cgstAmount + igstAmount;
 
       // Create invoice with items
       const invoice = await prisma.invoice.create({
         data: {
           invoiceNumber,
           userId: req.user!.id,
+          // Tax Invoice Details
+          taxInvNo: taxInvNo || '',
+          taxInvDate: taxInvDate ? new Date(taxInvDate) : null,
+          chalanNo: chalanNo || '',
+          chalanDate: chalanDate ? new Date(chalanDate) : null,
+          orderNo: orderNo || '',
+          orderDate: orderDate ? new Date(orderDate) : null,
+          paymentTerm: paymentTerm || '',
+          dueOn: dueOn ? new Date(dueOn) : null,
+          brokerName: brokerName || '',
+          // IRN
+          irn: irn || '',
+          // Billed To
+          billedToName: billedToName || '',
+          billedToAddress: billedToAddress || '',
+          billedToState: billedToState || '',
+          billedToGSTIN: billedToGSTIN || '',
+          billedToPANo: billedToPANo || '',
+          // Transporter
+          transporterName: transporterName || '',
+          lrNo: lrNo || '',
+          lrDate: lrDate ? new Date(lrDate) : null,
+          vehicleNo: vehicleNo || '',
+          placeOfSupply: placeOfSupply || '',
+          from: from || '',
+          to: to || '',
+          noOfBoxes: noOfBoxes || '',
+          // ACK
+          ackNo: ackNo || '',
+          // Shipped To
+          shippedToName: shippedToName || '',
+          shippedToAddress: shippedToAddress || '',
+          shippedToState: shippedToState || '',
+          shippedToGSTIN: shippedToGSTIN || '',
+          shippedToPANo: shippedToPANo || '',
+          // Tax settings
+          discountEnabled,
+          discountRate,
+          igstEnabled,
+          igstRate,
+          sgstEnabled,
+          sgstRate,
+          cgstEnabled,
+          cgstRate,
+          // Bank Details
+          bankDetails: bankDetails || '',
+          branch: branch || '',
+          rtgsNeftIfscCode: rtgsNeftIfscCode || '',
+          // Terms
+          termsAndConditions: termsAndConditions || '',
+          // Totals
           totalAmount,
+          discountAmount,
+          sgstAmount,
+          cgstAmount,
+          igstAmount,
+          netAmount,
           items: {
             create: invoiceItems,
           },
@@ -208,7 +364,7 @@ router.patch(
   '/:id/status',
   authenticate,
   [body('status').isIn(['pending', 'completed', 'cancelled'])],
-  async (req: AuthRequest, res) => {
+  async (req: AuthRequest, res: any) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -248,6 +404,71 @@ router.patch(
     }
   }
 );
+
+// Generate PDF
+router.get('/:id/pdf', async (req: AuthRequest, res: any) => {
+  let browser;
+  try {
+    const where: any = { id: req.params.id };
+
+    // Employees can only see their own invoices
+    if (req.user?.role === 'EMPLOYEE') {
+      where.userId = req.user.id;
+    }
+
+    const invoice = await prisma.invoice.findFirst({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                barcode: true,
+                price: true,
+                unit: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      return res.status(404).json({ error: 'Invoice not found' });
+    }
+
+    // Generate HTML
+    const logoBase64 = getLogoBase64();
+    const html = generateInvoiceHTML(invoice, LETTERHEAD, logoBase64);
+    
+    // Convert HTML to PDF using puppeteer
+    browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const pdf = await page.pdf({ format: 'A4' });
+
+    // Set response headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="invoice-${invoice.invoiceNumber}.pdf"`);
+    res.send(pdf);
+  } catch (error) {
+    console.error('Generate PDF error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
+});
 
 // Delete invoice
 router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
@@ -299,6 +520,382 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// HTML template generator
+function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string = '') {
+  const formatDate = (date: any) => {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  };
+
+  // Convert total amount to words
+  function amountToWords(num: number): string {
+    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+
+    const rupees = Math.floor(num);
+    const paise = Math.round((num - rupees) * 100);
+
+    function convertToWords(n: number): string {
+      if (n === 0) return '';
+      if (n < 10) return ones[n];
+      if (n < 20) return teens[n - 10];
+      if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
+      if (n < 1000) return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' ' + convertToWords(n % 100) : '');
+      if (n < 100000) return convertToWords(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 !== 0 ? ' ' + convertToWords(n % 1000) : '');
+      if (n < 10000000) return convertToWords(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 !== 0 ? ' ' + convertToWords(n % 100000) : '');
+      return convertToWords(Math.floor(n / 10000000)) + ' Crore' + (n % 10000000 !== 0 ? ' ' + convertToWords(n % 10000000) : '');
+    }
+
+    const rupeesInWords = convertToWords(rupees) || 'Zero';
+    const paiseInWords = paise > 0 ? ' and ' + convertToWords(paise) + ' Paise' : '';
+    return rupeesInWords + ' Rupees' + paiseInWords;
+  }
+
+  const itemRows = invoice.items
+    .map(
+      (item: any, index: number) => `
+    <tr>
+      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${index + 1}</td>
+      <td style="border: 1px solid #333; padding: 8px;">${item.description || item.product.name}</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.hsnCode || '-'}</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.quantity}</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: center;">₹${item.price.toFixed(2)}</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.per || item.product.unit}</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: right;">₹${item.subtotal.toFixed(2)}</td>
+    </tr>
+  `
+    )
+    .join('');
+
+  const logoHtml = logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="height: 80px; margin-bottom: 15px;">` : '';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        * { margin: 0; padding: 0; }
+        body {
+          font-family: Arial, sans-serif;
+          font-size: 11px;
+          color: #333;
+          line-height: 1.3;
+        }
+        .page { page-break-after: always; padding: 10mm; }
+        .letterhead {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          margin-bottom: 15px;
+          border-bottom: 2px solid #333;
+          padding-bottom: 10px;
+        }
+        .logo { flex-shrink: 0; width: 80px; }
+        .logo img { width: 80px; height: 100px; }
+        .company-info {
+          text-align: center;
+          flex: 1;
+          padding: 0 10px;
+          margin-left: 80px;
+          margin-right: 80px;
+        }
+        .letterhead-spacer { width: 80px; }  
+        .company-name { font-size: 18px; font-weight: bold; margin-bottom: 3px; }
+        .company-tagline { font-size: 10px; font-weight: bold; margin-bottom: 3px; }
+        .company-address { font-size: 10px; margin-bottom: 2px; }
+        .company-contact { font-size: 10px; }
+        .invoice-title {
+          font-size: 16px;
+          font-weight: bold;
+          text-align: center;
+          margin-bottom: 15px;
+        }
+        .section-row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .section-col { flex: 1; }
+        .box {
+          border: 1px solid #333;
+          padding: 10px;
+          margin-bottom: 10px;
+        }
+        
+        .box-row { display: flex; margin-bottom: 4px; font-size: 10px; }
+        .box-col { flex: 1; }
+        .box-col-label { font-weight: bold; width: 45%; }
+        .irn-field { margin-bottom: 10px; }
+        .irn-label { font-size: 10px; font-weight: bold; margin-bottom: 3px; }
+        .irn-input { border: 1px solid #333; padding: 5px; width: 100%; }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 10px;
+          font-size: 10px;
+        }
+        th, td { border: 1px solid #333; padding: 6px; }
+        th { background-color: #f0f0f0; font-weight: bold; text-align: left; }
+        .summary { margin-bottom: 10px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 10px; }
+        .summary-row.total { font-weight: bold; border-top: 1px solid #333; border-bottom: 2px solid #333; padding-top: 6px; padding-bottom: 6px; }
+        .rupees-words { border: 1px solid #333; padding: 8px; margin-bottom: 10px; font-weight: bold; }
+        .terms-box {
+          border: 1px solid #333;
+          padding: 8px;
+          margin-bottom: 10px;
+          font-size: 9px;
+          white-space: pre-wrap;
+          word-wrap: break-word;
+        }
+        .signature-section { display: flex; justify-content: space-between; margin-top: 20px; text-align: center; }
+        .signature-box { width: 30%; }
+        .signature-line { border-top: 1px solid #333; margin-top: 30px; font-size: 10px; padding-top: 5px; }
+        @media print { body { margin: 0; padding: 0; } .page { padding: 10mm; page-break-after: always; } }
+      </style>
+    </head>
+    <body>
+      <div class="page">
+        <!-- Letterhead -->
+        <div class="letterhead">
+        ${logoHtml ? `<div class="logo">${logoHtml}</div>` : ''}
+        <div class="company-info">
+        <div class="company-name">${letterhead.companyName}</div>
+        <div class="company-tagline">${letterhead.tagline}</div>
+        <div class="company-address">${letterhead.address}</div>
+        <div class="company-contact">Contact: ${letterhead.contact} | Email: ${letterhead.email}</div>
+        <div style="font-size: 10px; margin-top: 3px;">GSTIN: ${letterhead.gstin}</div>
+        </div>
+          <div class="letterhead-spacer"></div>
+         </div>
+
+        <!-- Invoice Title -->
+        <div class="invoice-title">TAX INVOICE</div>
+
+        <!-- Two Column Section -->
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+          <!-- LEFT COLUMN -->
+          <div style="flex: 1;">
+            <!-- Tax Invoice Details Box -->
+            <div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
+              <div style="display: flex; margin-bottom: 4px; gap: 15px;">
+                <div style="flex: 1;">
+                  <span style="font-weight: bold;">Tax Inv No.:</span>
+                  <span>${invoice.taxInvNo || '-'}</span>
+                </div>
+                <div style="flex: 1;">
+                  <span style="font-weight: bold;">Date:</span>
+                  <span>${formatDate(invoice.taxInvDate)}</span>
+                </div>
+              </div>
+              <div style="display: flex; margin-bottom: 4px; gap: 15px;">
+                <div style="flex: 1;">
+                  <span style="font-weight: bold;">Chalan No.:</span>
+                  <span>${invoice.chalanNo || '-'}</span>
+                </div>
+                <div style="flex: 1;">
+                  <span style="font-weight: bold;">Date:</span>
+                  <span>${formatDate(invoice.chalanDate)}</span>
+                </div>
+              </div>
+              <div style="display: flex; margin-bottom: 4px; gap: 15px;">
+                <div style="flex: 1;">
+                  <span style="font-weight: bold;">Order No.:</span>
+                  <span>${invoice.orderNo || '-'}</span>
+                </div>
+                <div style="flex: 1;">
+                  <span style="font-weight: bold;">Order Date:</span>
+                  <span>${formatDate(invoice.orderDate)}</span>
+                </div>
+              </div>
+              <div style="display: flex; margin-bottom: 4px; gap: 15px;">
+                <div style="flex: 1;">
+                  <span style="font-weight: bold;">Payment Term:</span>
+                  <span>${invoice.paymentTerm || '-'}</span>
+                </div>
+                <div style="flex: 1;">
+                  <span style="font-weight: bold;">Due On:</span>
+                  <span>${formatDate(invoice.dueOn)}</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                  <span style="font-weight: bold;">Broker Name:</span>
+                  <span>${invoice.brokerName || '-'}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- IRN Field -->
+            <div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
+              <span style="font-weight: bold;">IRN:</span>
+              <span>${invoice.irn || '-'}</span>
+            </div>
+
+            <!-- Billed To Box -->
+            <div style="border: 1px solid #333; padding: 10px;">
+              <div style="font-weight: bold; margin-bottom: 4px; font-size: 10px;">Billed To</div>
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Name:</span> <span>${invoice.billedToName || '-'}</span></div>
+              ${invoice.billedToAddress ? `<div style="margin-bottom: 4px; font-size: 9px; white-space: pre-wrap;"><span style="font-weight: bold;">Address:</span> ${invoice.billedToAddress}</div>` : ''}
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State:</span> <span>${invoice.billedToState || '-'}</span></div>
+              <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;"><span style="font-weight: bold;">GSTIN:</span> <span>${invoice.billedToGSTIN || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">P.A. No.:</span> <span>${invoice.billedToPANo || '-'}</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div style="flex: 1;">
+            <!-- Transporter Box -->
+            <div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Transporter:</span> <span>${invoice.transporterName || '-'}</span></div>
+              <div style="display: flex; margin-bottom: 4px; gap: 15px;">
+                <div style="flex: 1;"><span style="font-weight: bold;">L.R. No.:</span> <span>${invoice.lrNo || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">Date:</span> <span>${formatDate(invoice.lrDate)}</span></div>
+              </div>
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Vehicle No.:</span> <span>${invoice.vehicleNo || '-'}</span></div>
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Place of Supply:</span> <span>${invoice.placeOfSupply || '-'}</span></div>
+              <div style="display: flex; margin-bottom: 4px; gap: 15px;">
+                <div style="flex: 1;"><span style="font-weight: bold;">From:</span> <span>${invoice.from || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">To:</span> <span>${invoice.to || '-'}</span></div>
+              </div>
+              <div><span style="font-weight: bold;">No. of Boxes:</span> <span>${invoice.noOfBoxes || '-'}</span></div>
+            </div>
+
+            <!-- ACK No -->
+            <div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
+              <span style="font-weight: bold;">ACK No.:</span>
+              <span>${invoice.ackNo || '-'}</span>
+            </div>
+
+            <!-- Shipped To Box -->
+            <div style="border: 1px solid #333; padding: 10px;">
+              <div style="font-weight: bold; margin-bottom: 4px; font-size: 10px;">Shipped To</div>
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Name:</span> <span>${invoice.shippedToName || '-'}</span></div>
+              ${invoice.shippedToAddress ? `<div style="margin-bottom: 4px; font-size: 9px; white-space: pre-wrap;"><span style="font-weight: bold;">Address:</span> ${invoice.shippedToAddress}</div>` : ''}
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State:</span> <span>${invoice.shippedToState || '-'}</span></div>
+              <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;"><span style="font-weight: bold;">GSTIN:</span> <span>${invoice.shippedToGSTIN || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">P.A. No.:</span> <span>${invoice.shippedToPANo || '-'}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Details Table -->
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 5%;">S.No</th>
+              <th>Description of Goods</th>
+              <th style="width: 12%;">HSN/SAC Code</th>
+              <th style="width: 10%;">Quantity</th>
+              <th style="width: 10%;">Rate</th>
+              <th style="width: 8%;">Per</th>
+              <th style="width: 12%;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemRows}
+          </tbody>
+        </table>
+
+        <!-- Summary -->
+        <div style="display: flex; gap: 20px;">
+          <div style="flex: 1;"></div>
+          <div style="width: 300px;">
+            <div class="summary">
+              <div class="summary-row">
+                <span>Subtotal:</span>
+                <span>₹${invoice.totalAmount.toFixed(2)}</span>
+              </div>
+              ${
+                invoice.discountAmount > 0
+                  ? `<div class="summary-row"><span>Discount (${invoice.discountRate}%):</span><span>-₹${invoice.discountAmount.toFixed(2)}</span></div>`
+                  : ''
+              }
+              <div class="summary-row">
+                <span>Subtotal After Discount:</span>
+                <span>₹${(invoice.totalAmount - invoice.discountAmount).toFixed(2)}</span>
+              </div>
+              ${
+                invoice.sgstAmount > 0
+                  ? `<div class="summary-row"><span>SGST (${invoice.sgstRate}%):</span><span>₹${invoice.sgstAmount.toFixed(2)}</span></div>`
+                  : ''
+              }
+              ${
+                invoice.cgstAmount > 0
+                  ? `<div class="summary-row"><span>CGST (${invoice.cgstRate}%):</span><span>₹${invoice.cgstAmount.toFixed(2)}</span></div>`
+                  : ''
+              }
+              ${
+                invoice.igstAmount > 0
+                  ? `<div class="summary-row"><span>IGST (${invoice.igstRate}%):</span><span>₹${invoice.igstAmount.toFixed(2)}</span></div>`
+                  : ''
+              }
+              <div class="summary-row total">
+                <span>Total Amount:</span>
+                <span>₹${invoice.netAmount.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rupees in Words -->
+        <div class="rupees-words">
+          Rupees: ${amountToWords(invoice.netAmount)}
+        </div>
+
+        <!-- Bank Details -->
+        ${
+        invoice.bankDetails || invoice.branch || invoice.rtgsNeftIfscCode
+        ? `<div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
+        <div style="font-weight: bold; margin-bottom: 6px; font-size: 10px;">Bank Details</div>
+        <div style="display: flex; gap: 20px;">
+          <div style="flex: 1;">
+            ${invoice.bankDetails ? `<div style="font-size: 9px; white-space: pre-wrap; font-weight: bold;">${invoice.bankDetails}</div>` : ''}
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+        <div><span style="font-weight: bold;">Branch:</span> <span>${invoice.branch || '-'}</span></div>
+        <div><span style="font-weight: bold;">RTGS/NEFT/IFSC Code:</span> <span>${invoice.rtgsNeftIfscCode || '-'}</span></div>
+          </div>
+            </div>
+           </div>`
+            : ''
+        }
+
+        <!-- Terms & Conditions and Signature Section -->
+        <div style="display: flex; gap: 20px; margin-bottom: 10px;">
+           <!-- Terms & Conditions -->
+          <div style="flex: 1; border: 1px solid #333; padding: 8px; font-size: 9px;">
+            <strong style="font-size: 10px;">Terms & Conditions:</strong><br/>
+          ${
+            invoice.termsAndConditions
+            ? invoice.termsAndConditions
+                  .split('\n')
+                    .filter((line: string) => line.trim())
+                     .map((line: string) => `<div style="margin-bottom: 4px;">• ${line.trim()}</div>`)
+                     .join('')
+                 : '<div>• N/A</div>'
+             }
+           </div>
+           
+           <!-- Signature Section -->
+           <div style="width: 200px; text-align: center;">
+             <div style="border-top: 1px solid #333; margin-top: 30px; padding-top: 5px; font-size: 10px;">
+               Authorized Signatory
+             </div>
+           </div>
+         </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
 
 export default router;
 

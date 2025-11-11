@@ -58,3 +58,9 @@
   }
 }
 
+@layer components {
+  .terms-textarea {
+    padding-left: 0 !important;
+  }
+}
+

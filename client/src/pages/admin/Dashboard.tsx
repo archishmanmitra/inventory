@@ -3,6 +3,7 @@ import Layout from '../../components/Layout'
 import Employees from './Employees'
 import Statistics from './Statistics'
 import Invoices from '../shared/Invoices'
+import InvoiceFormNew from './InvoiceFormNew'
 import PurchaseOrders from '../shared/PurchaseOrders'
 import Products from '../shared/Products'
 import Inventory from '../shared/Inventory'
@@ -16,6 +17,7 @@ export default function AdminDashboard() {
         <Route path="employees" element={<Employees />} />
         <Route path="statistics" element={<Statistics />} />
         <Route path="invoices" element={<Invoices />} />
+        <Route path="invoices/create" element={<InvoiceFormNew />} />
         <Route path="purchase-orders" element={<PurchaseOrders />} />
         <Route path="products" element={<Products />} />
         <Route path="inventory" element={<Inventory />} />
