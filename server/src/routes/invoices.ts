@@ -737,9 +737,8 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
 
             <!-- Billed To Box -->
             <div style="border: 1px solid #333; padding: 10px;">
-              <div style="font-weight: bold; margin-bottom: 4px; font-size: 10px;">Billed To</div>
-              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Name:</span> <span>${invoice.billedToName || '-'}</span></div>
-              ${invoice.billedToAddress ? `<div style="margin-bottom: 4px; font-size: 9px; white-space: pre-wrap;"><span style="font-weight: bold;">Address:</span> ${invoice.billedToAddress}</div>` : ''}
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Billed To: ${invoice.billedToName || '-'}</span></div>
+              ${invoice.billedToAddress ? `<div style="margin-bottom: 4px; white-space: pre-wrap;">${invoice.billedToAddress}</div>` : ''}
               <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State:</span> <span>${invoice.billedToState || '-'}</span></div>
               <div style="display: flex; gap: 15px;">
                 <div style="flex: 1;"><span style="font-weight: bold;">GSTIN:</span> <span>${invoice.billedToGSTIN || '-'}</span></div>
@@ -774,9 +773,8 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
 
             <!-- Shipped To Box -->
             <div style="border: 1px solid #333; padding: 10px;">
-              <div style="font-weight: bold; margin-bottom: 4px; font-size: 10px;">Shipped To</div>
-              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Name:</span> <span>${invoice.shippedToName || '-'}</span></div>
-              ${invoice.shippedToAddress ? `<div style="margin-bottom: 4px; font-size: 9px; white-space: pre-wrap;"><span style="font-weight: bold;">Address:</span> ${invoice.shippedToAddress}</div>` : ''}
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Shipped To: ${invoice.shippedToName || '-'}</span></div>
+              ${invoice.shippedToAddress ? `<div style="margin-bottom: 4px; white-space: pre-wrap;">${invoice.shippedToAddress}</div>` : ''}
               <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State:</span> <span>${invoice.shippedToState || '-'}</span></div>
               <div style="display: flex; gap: 15px;">
                 <div style="flex: 1;"><span style="font-weight: bold;">GSTIN:</span> <span>${invoice.shippedToGSTIN || '-'}</span></div>

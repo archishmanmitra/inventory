@@ -370,7 +370,17 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
                 {/* BILLED TO BOX */}
                 <div className="border-2 border-gray-400 p-3 rounded flex-1 space-y-1">
                 <div>
-                <Label className="text-xs block mb-1">Billed To Address</Label>
+                <Label className="text-xs block mb-1">Billed To</Label>
+                <Input
+                name="billedToName"
+                value={formData.billedToName}
+                onChange={handleInputChange}
+                className="text-sm h-8"
+                placeholder="Name"
+                />
+                </div>
+                <div>
+                <Label className="text-xs block mb-1">Address</Label>
                 <Textarea
                 name="billedToAddress"
                 value={formData.billedToAddress}
@@ -521,7 +531,17 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
                 {/* SHIPPED TO BOX */}
                 <div className="border-2 border-gray-400 p-3 rounded flex-1 space-y-1">
                 <div>
-                <Label className="text-xs block mb-1">Shipped To Address</Label>
+                <Label className="text-xs block mb-1">Shipped To</Label>
+                <Input
+                name="shippedToName"
+                value={formData.shippedToName}
+                onChange={handleInputChange}
+                className="text-sm h-8"
+                placeholder="Name"
+                />
+                </div>
+                <div>
+                <Label className="text-xs block mb-1">Address</Label>
                 <Textarea
                 name="shippedToAddress"
                 value={formData.shippedToAddress}
