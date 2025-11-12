@@ -129,8 +129,8 @@ export default function Statistics() {
                   <TableRow>
                     <TableHead>Employee</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Total Invoices</TableHead>
-                    <TableHead>Total Revenue</TableHead>
+                    <TableHead className="text-center">Total Invoices</TableHead>
+                    <TableHead className="text-right">Total Revenue</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -138,8 +138,8 @@ export default function Statistics() {
                     <TableRow key={item.userId}>
                       <TableCell>{item.user?.name || 'N/A'}</TableCell>
                       <TableCell>{item.user?.email || 'N/A'}</TableCell>
-                      <TableCell>{item._count.id}</TableCell>
-                      <TableCell>{formatCurrency(item._sum.totalAmount)}</TableCell>
+                      <TableCell className="text-center">{item._count.id}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(item._sum.totalAmount)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -159,7 +159,7 @@ export default function Statistics() {
                   <TableRow>
                     <TableHead>Invoice Number</TableHead>
                     <TableHead>Employee</TableHead>
-                    <TableHead>Amount</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date</TableHead>
                   </TableRow>
@@ -169,7 +169,7 @@ export default function Statistics() {
                     <TableRow key={invoice.id}>
                       <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                       <TableCell>{invoice.user?.name}</TableCell>
-                      <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(invoice.totalAmount)}</TableCell>
                       <TableCell>
                         <span className="px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-700 capitalize font-semibold">
                           {invoice.status}
@@ -254,8 +254,8 @@ export default function Statistics() {
                   <TableRow>
                     <TableHead>Employee</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Total Orders</TableHead>
-                    <TableHead>Total Cost</TableHead>
+                    <TableHead className="text-center">Total Orders</TableHead>
+                    <TableHead className="text-right">Total Cost</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -263,8 +263,8 @@ export default function Statistics() {
                     <TableRow key={item.userId}>
                       <TableCell>{item.user?.name || 'N/A'}</TableCell>
                       <TableCell>{item.user?.email || 'N/A'}</TableCell>
-                      <TableCell>{item._count.id}</TableCell>
-                      <TableCell>{formatCurrency(item._sum.totalAmount)}</TableCell>
+                      <TableCell className="text-center">{item._count.id}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(item._sum.totalAmount)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -284,7 +284,7 @@ export default function Statistics() {
                   <TableRow>
                     <TableHead>Order Number</TableHead>
                     <TableHead>Employee</TableHead>
-                    <TableHead>Amount</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date</TableHead>
                   </TableRow>
@@ -294,7 +294,7 @@ export default function Statistics() {
                     <TableRow key={po.id}>
                       <TableCell className="font-medium">{po.orderNumber}</TableCell>
                       <TableCell>{po.user?.name}</TableCell>
-                      <TableCell>{formatCurrency(po.totalAmount)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(po.totalAmount)}</TableCell>
                       <TableCell>
                         <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
                           {po.status}

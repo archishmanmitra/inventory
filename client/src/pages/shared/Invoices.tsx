@@ -152,28 +152,28 @@ export default function Invoices() {
               <CardContent className="pt-6">
                 <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Invoice Number</TableHead>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoices?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No invoices found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    invoices?.map((invoice: any) => (
-                      <TableRow key={invoice.id}>
-                        <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
-                        <TableCell>{invoice.user?.name}</TableCell>
-                        <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
+                   <TableRow>
+                     <TableHead>Invoice Number</TableHead>
+                     <TableHead>Employee</TableHead>
+                     <TableHead className="text-right">Amount</TableHead>
+                     <TableHead>Status</TableHead>
+                     <TableHead>Date</TableHead>
+                     <TableHead className="text-right">Actions</TableHead>
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+                   {invoices?.length === 0 ? (
+                     <TableRow>
+                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                         No invoices found
+                       </TableCell>
+                     </TableRow>
+                   ) : (
+                     invoices?.map((invoice: any) => (
+                       <TableRow key={invoice.id}>
+                         <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                         <TableCell>{invoice.user?.name}</TableCell>
+                         <TableCell className="text-right">{formatCurrency(invoice.totalAmount)}</TableCell>
                         <TableCell>
                           <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
                             {invoice.status}
@@ -247,7 +247,7 @@ export default function Invoices() {
                         displayedInvoices.map((invoice: any) => (
                         <TableRow key={invoice.id}>
                         <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
-                        <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(invoice.totalAmount)}</TableCell>
                         <TableCell>
                         <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
                         {invoice.status}
@@ -322,7 +322,7 @@ export default function Invoices() {
                 displayedInvoices.map((invoice: any) => (
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
-                    <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(invoice.totalAmount)}</TableCell>
                     <TableCell>
                       <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
                         {invoice.status}
@@ -401,18 +401,18 @@ export default function Invoices() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Product</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Subtotal</TableHead>
+                      <TableHead className="text-center">Quantity</TableHead>
+                      <TableHead className="text-right">Price</TableHead>
+                      <TableHead className="text-right">Subtotal</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {viewInvoice.items?.map((item: any) => (
                       <TableRow key={item.id}>
                         <TableCell>{item.product?.name}</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell>{formatCurrency(item.price)}</TableCell>
-                        <TableCell>{formatCurrency(item.subtotal)}</TableCell>
+                        <TableCell className="text-center">{item.quantity}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.subtotal)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

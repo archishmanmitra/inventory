@@ -297,7 +297,7 @@ export default function PurchaseOrders() {
                     <TableRow>
                       <TableHead>Order Number</TableHead>
                       <TableHead>Employee</TableHead>
-                      <TableHead>Amount</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -313,9 +313,9 @@ export default function PurchaseOrders() {
                     ) : (
                       purchaseOrders?.map((po: any) => (
                         <TableRow key={po.id}>
-                          <TableCell className="font-medium">{po.orderNumber}</TableCell>
-                          <TableCell>{po.user?.name}</TableCell>
-                          <TableCell>{formatCurrency(po.totalAmount)}</TableCell>
+                           <TableCell className="font-medium">{po.orderNumber}</TableCell>
+                           <TableCell>{po.user?.name}</TableCell>
+                           <TableCell className="text-right">{formatCurrency(po.totalAmount)}</TableCell>
                           <TableCell>
                             <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
                               {po.status}
@@ -360,24 +360,24 @@ export default function PurchaseOrders() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Order Number</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {displayedPOs.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                          No purchase orders found
-                        </TableCell>
+                       <TableHead className="text-right">Amount</TableHead>
+                       <TableHead>Status</TableHead>
+                       <TableHead>Date</TableHead>
+                       <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ) : (
-                      displayedPOs.map((po: any) => (
-                        <TableRow key={po.id}>
-                          <TableCell className="font-medium">{po.orderNumber}</TableCell>
-                          <TableCell>{formatCurrency(po.totalAmount)}</TableCell>
+                      </TableHeader>
+                      <TableBody>
+                      {displayedPOs.length === 0 ? (
+                       <TableRow>
+                         <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                           No purchase orders found
+                         </TableCell>
+                       </TableRow>
+                      ) : (
+                       displayedPOs.map((po: any) => (
+                         <TableRow key={po.id}>
+                           <TableCell className="font-medium">{po.orderNumber}</TableCell>
+                           <TableCell className="text-right">{formatCurrency(po.totalAmount)}</TableCell>
                           <TableCell>
                             <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
                               {po.status}
@@ -422,25 +422,25 @@ export default function PurchaseOrders() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order Number</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {displayedPOs.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      No purchase orders found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  displayedPOs.map((po: any) => (
-                    <TableRow key={po.id}>
-                      <TableCell className="font-medium">{po.orderNumber}</TableCell>
-                      <TableCell>{formatCurrency(po.totalAmount)}</TableCell>
+                   <TableHead>Order Number</TableHead>
+                   <TableHead className="text-right">Amount</TableHead>
+                   <TableHead>Status</TableHead>
+                   <TableHead>Date</TableHead>
+                   <TableHead className="text-right">Actions</TableHead>
+                 </TableRow>
+                </TableHeader>
+                <TableBody>
+                 {displayedPOs.length === 0 ? (
+                   <TableRow>
+                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                       No purchase orders found
+                     </TableCell>
+                   </TableRow>
+                 ) : (
+                   displayedPOs.map((po: any) => (
+                     <TableRow key={po.id}>
+                       <TableCell className="font-medium">{po.orderNumber}</TableCell>
+                       <TableCell className="text-right">{formatCurrency(po.totalAmount)}</TableCell>
                       <TableCell>
                         <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary capitalize">
                           {po.status}
@@ -510,18 +510,18 @@ export default function PurchaseOrders() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Product</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Cost</TableHead>
-                      <TableHead>Subtotal</TableHead>
+                      <TableHead className="text-center">Quantity</TableHead>
+                      <TableHead className="text-right">Cost</TableHead>
+                      <TableHead className="text-right">Subtotal</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {viewPO.items?.map((item: any) => (
                       <TableRow key={item.id}>
                         <TableCell>{item.product?.name}</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell>{formatCurrency(item.cost)}</TableCell>
-                        <TableCell>{formatCurrency(item.subtotal)}</TableCell>
+                        <TableCell className="text-center">{item.quantity}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.cost)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.subtotal)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

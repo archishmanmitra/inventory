@@ -676,109 +676,94 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
         <div class="invoice-title">TAX INVOICE</div>
 
         <!-- Two Column Section -->
-        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+        <div style="display: flex; gap: 15px; margin-bottom: 15px; border: 1px solid #333;">
           <!-- LEFT COLUMN -->
-          <div style="flex: 1;">
+          <div style="flex: 1; padding: 10px; border-right: 1px solid #333;">
             <!-- Tax Invoice Details Box -->
-            <div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
+            <div style="margin-bottom: 10px; font-size: 10px;">
               <div style="display: flex; margin-bottom: 4px; gap: 15px;">
                 <div style="flex: 1;">
-                  <span style="font-weight: bold;">Tax Inv No.:</span>
-                  <span>${invoice.taxInvNo || '-'}</span>
+                  <div><span style="font-weight: bold;">Tax Inv No.</span> <span style="font-weight: bold;">:</span> <span>${invoice.taxInvNo || '-'}</span></div>
                 </div>
                 <div style="flex: 1;">
-                  <span style="font-weight: bold;">Date:</span>
-                  <span>${formatDate(invoice.taxInvDate)}</span>
+                  <div><span style="font-weight: bold;">Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(invoice.taxInvDate)}</span></div>
                 </div>
               </div>
               <div style="display: flex; margin-bottom: 4px; gap: 15px;">
                 <div style="flex: 1;">
-                  <span style="font-weight: bold;">Chalan No.:</span>
-                  <span>${invoice.chalanNo || '-'}</span>
+                  <div><span style="font-weight: bold;">Chalan No.</span> <span style="font-weight: bold;">:</span> <span>${invoice.chalanNo || '-'}</span></div>
                 </div>
                 <div style="flex: 1;">
-                  <span style="font-weight: bold;">Date:</span>
-                  <span>${formatDate(invoice.chalanDate)}</span>
+                  <div><span style="font-weight: bold;">Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(invoice.chalanDate)}</span></div>
                 </div>
+              </div>
+              <div style="margin-bottom: 4px;">
+                <div><span style="font-weight: bold;">Order No.</span> <span style="font-weight: bold;">:</span> <span>${invoice.orderNo || '-'}</span></div>
+                <div><span style="font-weight: bold;">Order Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(invoice.orderDate)}</span></div>
               </div>
               <div style="display: flex; margin-bottom: 4px; gap: 15px;">
                 <div style="flex: 1;">
-                  <span style="font-weight: bold;">Order No.:</span>
-                  <span>${invoice.orderNo || '-'}</span>
+                  <div><span style="font-weight: bold;">Payment Term</span> <span style="font-weight: bold;">:</span> <span>${invoice.paymentTerm || '-'}</span></div>
                 </div>
                 <div style="flex: 1;">
-                  <span style="font-weight: bold;">Order Date:</span>
-                  <span>${formatDate(invoice.orderDate)}</span>
+                  <div><span style="font-weight: bold;">Due On</span> <span style="font-weight: bold;">:</span> <span>${formatDate(invoice.dueOn)}</span></div>
                 </div>
               </div>
-              <div style="display: flex; margin-bottom: 4px; gap: 15px;">
-                <div style="flex: 1;">
-                  <span style="font-weight: bold;">Payment Term:</span>
-                  <span>${invoice.paymentTerm || '-'}</span>
-                </div>
-                <div style="flex: 1;">
-                  <span style="font-weight: bold;">Due On:</span>
-                  <span>${formatDate(invoice.dueOn)}</span>
-                </div>
-              </div>
-              <div style="display: flex; gap: 15px;">
-                <div style="flex: 1;">
-                  <span style="font-weight: bold;">Broker Name:</span>
-                  <span>${invoice.brokerName || '-'}</span>
-                </div>
+              <div style="margin-bottom: 4px;">
+                <span style="font-weight: bold;">Broker Name</span> <span style="font-weight: bold;">:</span> <span>${invoice.brokerName || '-'}</span>
               </div>
             </div>
 
-            <!-- IRN Field -->
-            <div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
-              <span style="font-weight: bold;">IRN:</span>
-              <span>${invoice.irn || '-'}</span>
-            </div>
+            <!-- IRN and ACK No Box -->
+                       <div style="margin-bottom: 10px; font-size: 10px; display: flex; gap: 15px;">
+              <div style="flex: 1;">
+                <div style="font-weight: bold;">IRN :</div>
+                 <div>${invoice.irn || '-'}</div>
+                </div>
+                <div style="flex: 1;">
+                 <div style="font-weight: bold;">ACK No. :</div>
+                  <div>${invoice.ackNo || '-'}</div>
+                </div>
+              </div>
 
             <!-- Billed To Box -->
-            <div style="border: 1px solid #333; padding: 10px;">
+            <div style="font-size: 10px;">
               <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Billed To: ${invoice.billedToName || '-'}</span></div>
               ${invoice.billedToAddress ? `<div style="margin-bottom: 4px; white-space: pre-wrap;">${invoice.billedToAddress}</div>` : ''}
-              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State:</span> <span>${invoice.billedToState || '-'}</span></div>
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State</span> <span style="font-weight: bold;">:</span> <span>${invoice.billedToState || '-'}</span></div>
               <div style="display: flex; gap: 15px;">
-                <div style="flex: 1;"><span style="font-weight: bold;">GSTIN:</span> <span>${invoice.billedToGSTIN || '-'}</span></div>
-                <div style="flex: 1;"><span style="font-weight: bold;">P.A. No.:</span> <span>${invoice.billedToPANo || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">GSTIN</span> <span style="font-weight: bold;">:</span> <span>${invoice.billedToGSTIN || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">P.A.No.:</span> <span>${invoice.billedToPANo || '-'}</span></div>
               </div>
             </div>
           </div>
 
           <!-- RIGHT COLUMN -->
-          <div style="flex: 1;">
+          <div style="flex: 1; padding: 10px;">
             <!-- Transporter Box -->
-            <div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
-              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Transporter:</span> <span>${invoice.transporterName || '-'}</span></div>
+            <div style="margin-bottom: 10px; font-size: 10px;">
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Transporter</span> <span style="font-weight: bold;">:</span> <span>${invoice.transporterName || '-'}</span></div>
               <div style="display: flex; margin-bottom: 4px; gap: 15px;">
-                <div style="flex: 1;"><span style="font-weight: bold;">L.R. No.:</span> <span>${invoice.lrNo || '-'}</span></div>
-                <div style="flex: 1;"><span style="font-weight: bold;">Date:</span> <span>${formatDate(invoice.lrDate)}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">L.R.No.</span> <span style="font-weight: bold;">:</span> <span>${invoice.lrNo || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(invoice.lrDate)}</span></div>
               </div>
-              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Vehicle No.:</span> <span>${invoice.vehicleNo || '-'}</span></div>
-              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Place of Supply:</span> <span>${invoice.placeOfSupply || '-'}</span></div>
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Vehicle No.</span> <span style="font-weight: bold;">:</span> <span>${invoice.vehicleNo || '-'}</span></div>
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Place of Supply</span> <span style="font-weight: bold;">:</span> <span>${invoice.placeOfSupply || '-'}</span></div>
               <div style="display: flex; margin-bottom: 4px; gap: 15px;">
-                <div style="flex: 1;"><span style="font-weight: bold;">From:</span> <span>${invoice.from || '-'}</span></div>
-                <div style="flex: 1;"><span style="font-weight: bold;">To:</span> <span>${invoice.to || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">From</span> <span style="font-weight: bold;">:</span> <span>${invoice.from || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">To</span> <span style="font-weight: bold;">:</span> <span>${invoice.to || '-'}</span></div>
               </div>
-              <div><span style="font-weight: bold;">No. of Boxes:</span> <span>${invoice.noOfBoxes || '-'}</span></div>
-            </div>
+              <div><span style="font-weight: bold;">No.oF Boxes</span> <span style="font-weight: bold;">:</span> <span>${invoice.noOfBoxes || '-'}</span></div>
+              </div>
 
-            <!-- ACK No -->
-            <div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
-              <span style="font-weight: bold;">ACK No.:</span>
-              <span>${invoice.ackNo || '-'}</span>
-            </div>
-
-            <!-- Shipped To Box -->
-            <div style="border: 1px solid #333; padding: 10px;">
+              <!-- Shipped To Box -->
+            <div style="font-size: 10px;">
               <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Shipped To: ${invoice.shippedToName || '-'}</span></div>
               ${invoice.shippedToAddress ? `<div style="margin-bottom: 4px; white-space: pre-wrap;">${invoice.shippedToAddress}</div>` : ''}
-              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State:</span> <span>${invoice.shippedToState || '-'}</span></div>
+              <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State</span> <span style="font-weight: bold;">:</span> <span>${invoice.shippedToState || '-'}</span></div>
               <div style="display: flex; gap: 15px;">
-                <div style="flex: 1;"><span style="font-weight: bold;">GSTIN:</span> <span>${invoice.shippedToGSTIN || '-'}</span></div>
-                <div style="flex: 1;"><span style="font-weight: bold;">P.A. No.:</span> <span>${invoice.shippedToPANo || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">GSTIN</span> <span style="font-weight: bold;">:</span> <span>${invoice.shippedToGSTIN || '-'}</span></div>
+                <div style="flex: 1;"><span style="font-weight: bold;">P.A.No.:</span> <span>${invoice.shippedToPANo || '-'}</span></div>
               </div>
             </div>
           </div>

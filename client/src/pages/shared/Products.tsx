@@ -247,9 +247,9 @@ export default function Products() {
               <TableRow key={product.id}>
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell className="font-mono text-sm">{product.barcode || '-'}</TableCell>
-                <TableCell>{formatCurrency(product.price)}</TableCell>
-                <TableCell>{formatCurrency(product.cost)}</TableCell>
-                <TableCell>
+                <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
+                <TableCell className="text-right">{formatCurrency(product.cost)}</TableCell>
+                <TableCell className="text-center">
                   <span className={product.stock < 10 ? 'text-destructive font-medium' : ''}>
                     {product.stock}
                   </span>
