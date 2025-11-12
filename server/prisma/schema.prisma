@@ -145,28 +145,80 @@ model InvoiceItem {
 }
 
 model PurchaseOrder {
-  id          String   @id @default(cuid())
-  orderNumber String   @unique
-  userId      String
-  totalAmount Float
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  orderNumber           String   @unique
+  userId                String
+  
+  // Purchase Order Details
+  poDate                DateTime?
+  gstNo                 String?
+  
+  // Shipment Address (Company Details)
+  shipmentName          String?
+  shipmentAddress       String?
+  shipmentState         String?
+  shipmentPhone         String?
+  
+  // Vendor Address (Supplier Details)
+  supplierName          String?
+  supplierAddress       String?
+  supplierState         String?
+  supplierGSTNo         String?
+  supplierPhone         String?
+  supplierEmail         String?
+  supplierContactPerson String?
+  
+  // Product Details Flags
+  discountEnabled       Boolean?  @default(false)
+  discountRate          Float?    @default(0)
+  cgstEnabled           Boolean?  @default(false)
+  cgstRate              Float?    @default(9)
+  sgstEnabled           Boolean?  @default(false)
+  sgstRate              Float?    @default(9)
+  igstEnabled           Boolean?  @default(false)
+  igstRate              Float?    @default(18)
+  
+  // Totals
+  totalAmount           Float?
+  discountAmount        Float?   @default(0)
+  cgstAmount            Float?   @default(0)
+  sgstAmount            Float?   @default(0)
+  igstAmount            Float?   @default(0)
+  netAmount             Float?
+  amountInWords         String?
+  
+  // Payment & Delivery Terms
+  paymentTerms          String?
+  delivery              String?
+  
+  // Special Terms and Conditions
+  termsAndConditions    String?
+  
+  status                String   @default("pending")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  user  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   items PurchaseOrderItem[]
 
   @@map("purchase_orders")
 }
 
 model PurchaseOrderItem {
-  id             String   @id @default(cuid())
-  purchaseOrderId String
-  productId      String
-  quantity       Int
-  cost           Float
-  subtotal       Float
-  createdAt      DateTime @default(now())
+  id                String   @id @default(cuid())
+  purchaseOrderId   String
+  productId         String
+  
+  // Item Details
+  itemDescription   String?
+  hsnCode           String?
+  quantity          Int
+  discount          Float?   @default(0)
+  rate              Float?
+  value             Float?
+  per               String?  @default("pcs")
+  
+  createdAt         DateTime @default(now())
 
   purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   product       Product       @relation(fields: [productId], references: [id])
