@@ -451,7 +451,16 @@ router.get('/:id/pdf', async (req: AuthRequest, res: any) => {
     const html = generateInvoiceHTML(invoice, LETTERHEAD, logoBase64);
     
     // Convert HTML to PDF using puppeteer
-    browser = await puppeteer.launch({ headless: true });
+    const launchOptions: any = {
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage', // This solves most of the memory issues
+      ],
+    };
+
+    browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
     const pdf = await page.pdf({ format: 'A4' });
@@ -462,10 +471,14 @@ router.get('/:id/pdf', async (req: AuthRequest, res: any) => {
     res.send(pdf);
   } catch (error) {
     console.error('Generate PDF error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Failed to generate PDF. Please try again later.' });
   } finally {
     if (browser) {
-      await browser.close();
+      try {
+        await browser.close();
+      } catch (closeError) {
+        console.error('Error closing browser:', closeError);
+      }
     }
   }
 });
