@@ -337,65 +337,200 @@ export default function PurchaseOrders() {
                       )}
 
                       {viewPO && (
-        <Dialog open={!!viewPO} onOpenChange={() => setViewPO(null)}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Purchase Order Details</DialogTitle>
-              <DialogDescription>PO #{viewPO.orderNumber}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Order Number</Label>
-                  <p className="font-medium">{viewPO.orderNumber}</p>
-                </div>
-                <div>
-                  <Label>Status</Label>
-                  <p className="capitalize">{viewPO.status}</p>
-                </div>
-                <div>
-                  <Label>Created By</Label>
-                  <p>{viewPO.user?.name}</p>
-                </div>
-                <div>
-                  <Label>Date</Label>
-                  <p>{formatDate(viewPO.createdAt)}</p>
-                </div>
-              </div>
-              <div>
-                <Label>Items</Label>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Product</TableHead>
+                      <Dialog open={!!viewPO} onOpenChange={() => setViewPO(null)}>
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                      <DialogTitle>Purchase Order Details</DialogTitle>
+                      <DialogDescription>PO #{viewPO.orderNumber}</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-6">
+                      {/* Basic Info */}
+                      <div className="grid grid-cols-2 gap-4">
+                      <div>
+                      <Label>Order Number</Label>
+                      <p className="font-medium">{viewPO.orderNumber}</p>
+                      </div>
+                      <div>
+                      <Label>Status</Label>
+                      <p className="capitalize">{viewPO.status}</p>
+                      </div>
+                      <div>
+                      <Label>Created By</Label>
+                      <p>{viewPO.user?.name}</p>
+                      </div>
+                      <div>
+                      <Label>Date</Label>
+                      <p>{formatDate(viewPO.createdAt)}</p>
+                      </div>
+                      </div>
+
+                      {/* PO Details */}
+                      <div className="border rounded-lg p-4 space-y-3">
+                      <h3 className="font-semibold">Purchase Order Details</h3>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                      <Label>PO Date</Label>
+                      <p>{viewPO.poDate ? formatDate(viewPO.poDate) : '-'}</p>
+                      </div>
+                      <div>
+                      <Label>GST No.</Label>
+                      <p>{viewPO.gstNo || '-'}</p>
+                      </div>
+                      </div>
+                      </div>
+
+                      {/* Shipment and Supplier Details */}
+                      <div className="grid grid-cols-2 gap-4">
+                      <div className="border rounded-lg p-4 space-y-2 text-sm">
+                      <h3 className="font-semibold">Shipment Address</h3>
+                      <div>
+                      <Label>Company Name</Label>
+                      <p>{viewPO.shipmentName || '-'}</p>
+                      </div>
+                      <div>
+                      <Label>Address</Label>
+                      <p className="whitespace-pre-wrap">{viewPO.shipmentAddress || '-'}</p>
+                      </div>
+                      <div>
+                      <Label>State</Label>
+                      <p>{viewPO.shipmentState || '-'}</p>
+                      </div>
+                      <div>
+                      <Label>Phone</Label>
+                      <p>{viewPO.shipmentPhone || '-'}</p>
+                      </div>
+                      </div>
+
+                      <div className="border rounded-lg p-4 space-y-2 text-sm">
+                      <h3 className="font-semibold">Vendor Address</h3>
+                      <div>
+                      <Label>Supplier Name</Label>
+                      <p>{viewPO.supplierName || '-'}</p>
+                      </div>
+                      <div>
+                      <Label>Address</Label>
+                      <p className="whitespace-pre-wrap">{viewPO.supplierAddress || '-'}</p>
+                      </div>
+                      <div>
+                      <Label>State</Label>
+                      <p>{viewPO.supplierState || '-'}</p>
+                      </div>
+                      <div>
+                      <Label>GST No.</Label>
+                      <p>{viewPO.supplierGSTNo || '-'}</p>
+                      </div>
+                      <div>
+                      <Label>Phone</Label>
+                      <p>{viewPO.supplierPhone || '-'}</p>
+                      </div>
+                      <div>
+                      <Label>Email</Label>
+                      <p>{viewPO.supplierEmail || '-'}</p>
+                      </div>
+                      <div>
+                      <Label>Contact Person</Label>
+                      <p>{viewPO.supplierContactPerson || '-'}</p>
+                      </div>
+                      </div>
+                      </div>
+
+                      {/* Items */}
+                      <div>
+                      <Label className="text-base font-semibold">Items</Label>
+                      <Table>
+                      <TableHeader>
+                      <TableRow>
+                      <TableHead>S.No</TableHead>
+                      <TableHead>Item Description</TableHead>
+                      <TableHead>HSN Code</TableHead>
                       <TableHead className="text-center">Quantity</TableHead>
-                      <TableHead className="text-right">Cost</TableHead>
-                      <TableHead className="text-right">Subtotal</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {viewPO.items?.map((item: any) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.product?.name}</TableCell>
-                        <TableCell className="text-center">{item.quantity}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.cost)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.subtotal)}</TableCell>
+                      <TableHead className="text-center">Discount %</TableHead>
+                      <TableHead className="text-right">Rate/Unit</TableHead>
+                      <TableHead className="text-right">Value</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <div className="flex justify-end mt-4">
-                  <div className="text-right">
-                    <p className="text-lg font-bold">
-                      Total: {formatCurrency(viewPO.totalAmount)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+                      </TableHeader>
+                      <TableBody>
+                      {viewPO.items?.map((item: any, idx: number) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{idx + 1}</TableCell>
+                        <TableCell>{item.itemDescription || item.product?.name}</TableCell>
+                        <TableCell>{item.hsnCode || '-'}</TableCell>
+                        <TableCell className="text-center">{item.quantity}</TableCell>
+                        <TableCell className="text-center">{item.discount || 0}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.rate || 0)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.value || 0)}</TableCell>
+                      </TableRow>
+                      ))}
+                      </TableBody>
+                      </Table>
+                      </div>
+
+                      {/* Tax Summary */}
+                      <div className="grid grid-cols-2 gap-4">
+                      <div />
+                      <div className="border rounded-lg p-4 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                      <span>Total:</span>
+                      <span className="font-medium">{formatCurrency(viewPO.totalAmount || 0)}</span>
+                      </div>
+                      {viewPO.discountAmount > 0 && (
+                      <div className="flex justify-between text-orange-600">
+                      <span>Discount ({viewPO.discountRate}%):</span>
+                      <span>-{formatCurrency(viewPO.discountAmount)}</span>
+                      </div>
+                      )}
+                      <div className="flex justify-between border-t pt-2">
+                      <span>After Discount:</span>
+                      <span className="font-medium">{formatCurrency((viewPO.totalAmount || 0) - (viewPO.discountAmount || 0))}</span>
+                      </div>
+                      {viewPO.cgstAmount > 0 && (
+                      <div className="flex justify-between">
+                      <span>CGST ({viewPO.cgstRate}%):</span>
+                      <span>{formatCurrency(viewPO.cgstAmount)}</span>
+                      </div>
+                      )}
+                      {viewPO.sgstAmount > 0 && (
+                      <div className="flex justify-between">
+                      <span>SGST ({viewPO.sgstRate}%):</span>
+                      <span>{formatCurrency(viewPO.sgstAmount)}</span>
+                      </div>
+                      )}
+                      {viewPO.igstAmount > 0 && (
+                      <div className="flex justify-between">
+                      <span>IGST ({viewPO.igstRate}%):</span>
+                      <span>{formatCurrency(viewPO.igstAmount)}</span>
+                      </div>
+                      )}
+                      <div className="flex justify-between font-bold border-t pt-2 text-base">
+                      <span>Net PO Amount:</span>
+                      <span>{formatCurrency(viewPO.netAmount || viewPO.totalAmount || 0)}</span>
+                      </div>
+                      </div>
+                      </div>
+
+                      {/* Payment & Delivery Terms */}
+                      <div className="grid grid-cols-2 gap-4">
+                      <div className="border rounded-lg p-4 space-y-2">
+                      <h3 className="font-semibold text-sm">Payment Terms</h3>
+                      <p className="whitespace-pre-wrap text-sm">{viewPO.paymentTerms || '-'}</p>
+                      </div>
+                      <div className="border rounded-lg p-4 space-y-2">
+                      <h3 className="font-semibold text-sm">Delivery</h3>
+                      <p className="whitespace-pre-wrap text-sm">{viewPO.delivery || '-'}</p>
+                      </div>
+                      </div>
+
+                      {/* Terms & Conditions */}
+                      {viewPO.termsAndConditions && (
+                      <div className="border rounded-lg p-4 space-y-2">
+                      <h3 className="font-semibold">Special Terms and Conditions</h3>
+                      <p className="whitespace-pre-wrap text-sm">{viewPO.termsAndConditions}</p>
+                      </div>
+                      )}
+                      </div>
+                      </DialogContent>
+                      </Dialog>
+                      )}
     </div>
   )
 }

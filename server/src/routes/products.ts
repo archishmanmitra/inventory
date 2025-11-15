@@ -67,7 +67,7 @@ router.post(
     body('description').trim().optional(),
     body('unit').trim().optional(),
   ],
-  async (req: AuthRequest, res) => {
+  async (req: AuthRequest, res: any) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -120,7 +120,7 @@ router.put(
     body('description').trim().optional(),
     body('unit').trim().optional(),
   ],
-  async (req, res) => {
+  async (req: any, res: any) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {

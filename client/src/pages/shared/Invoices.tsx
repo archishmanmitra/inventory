@@ -370,65 +370,290 @@ export default function Invoices() {
         )}
 
        {viewInvoice && (
-        <Dialog open={!!viewInvoice} onOpenChange={() => setViewInvoice(null)}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Invoice Details</DialogTitle>
-              <DialogDescription>Invoice #{viewInvoice.invoiceNumber}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Invoice Number</Label>
-                  <p className="font-medium">{viewInvoice.invoiceNumber}</p>
-                </div>
-                <div>
-                  <Label>Status</Label>
-                  <p className="capitalize">{viewInvoice.status}</p>
-                </div>
-                <div>
-                  <Label>Created By</Label>
-                  <p>{viewInvoice.user?.name}</p>
-                </div>
-                <div>
-                  <Label>Date</Label>
-                  <p>{formatDate(viewInvoice.createdAt)}</p>
-                </div>
-              </div>
-              <div>
-                <Label>Items</Label>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Product</TableHead>
-                      <TableHead className="text-center">Quantity</TableHead>
-                      <TableHead className="text-right">Price</TableHead>
-                      <TableHead className="text-right">Subtotal</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {viewInvoice.items?.map((item: any) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.product?.name}</TableCell>
-                        <TableCell className="text-center">{item.quantity}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.subtotal)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <div className="flex justify-end mt-4">
-                  <div className="text-right">
-                    <p className="text-lg font-bold">
-                      Total: {formatCurrency(viewInvoice.totalAmount)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+         <Dialog open={!!viewInvoice} onOpenChange={() => setViewInvoice(null)}>
+           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+             <DialogHeader>
+               <DialogTitle>Invoice Details</DialogTitle>
+               <DialogDescription>Invoice #{viewInvoice.invoiceNumber}</DialogDescription>
+             </DialogHeader>
+             <div className="space-y-6">
+               {/* Basic Info */}
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <Label>Invoice Number</Label>
+                   <p className="font-medium">{viewInvoice.invoiceNumber}</p>
+                 </div>
+                 <div>
+                   <Label>Status</Label>
+                   <p className="capitalize">{viewInvoice.status}</p>
+                 </div>
+                 <div>
+                   <Label>Created By</Label>
+                   <p>{viewInvoice.user?.name}</p>
+                 </div>
+                 <div>
+                   <Label>Date</Label>
+                   <p>{formatDate(viewInvoice.createdAt)}</p>
+                 </div>
+               </div>
+
+               {/* Tax Invoice Details */}
+               <div className="border rounded-lg p-4 space-y-3">
+                 <h3 className="font-semibold">Tax Invoice Details</h3>
+                 <div className="grid grid-cols-2 gap-3 text-sm">
+                   <div>
+                     <Label>Tax Invoice No.</Label>
+                     <p>{viewInvoice.taxInvNo || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Tax Invoice Date</Label>
+                     <p>{viewInvoice.taxInvDate ? formatDate(viewInvoice.taxInvDate) : '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Chalan No.</Label>
+                     <p>{viewInvoice.chalanNo || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Chalan Date</Label>
+                     <p>{viewInvoice.chalanDate ? formatDate(viewInvoice.chalanDate) : '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Order No.</Label>
+                     <p>{viewInvoice.orderNo || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Order Date</Label>
+                     <p>{viewInvoice.orderDate ? formatDate(viewInvoice.orderDate) : '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Payment Term</Label>
+                     <p>{viewInvoice.paymentTerm || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Due On</Label>
+                     <p>{viewInvoice.dueOn ? formatDate(viewInvoice.dueOn) : '-'}</p>
+                   </div>
+                   <div className="col-span-2">
+                     <Label>Broker Name</Label>
+                     <p>{viewInvoice.brokerName || '-'}</p>
+                   </div>
+                 </div>
+               </div>
+
+               {/* Transporter Details */}
+               <div className="border rounded-lg p-4 space-y-3">
+                 <h3 className="font-semibold">Transporter Details</h3>
+                 <div className="grid grid-cols-2 gap-3 text-sm">
+                   <div className="col-span-2">
+                     <Label>Transporter Name</Label>
+                     <p>{viewInvoice.transporterName || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>L.R. No.</Label>
+                     <p>{viewInvoice.lrNo || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>L.R. Date</Label>
+                     <p>{viewInvoice.lrDate ? formatDate(viewInvoice.lrDate) : '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Vehicle No.</Label>
+                     <p>{viewInvoice.vehicleNo || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Place of Supply</Label>
+                     <p>{viewInvoice.placeOfSupply || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>From</Label>
+                     <p>{viewInvoice.from || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>To</Label>
+                     <p>{viewInvoice.to || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>No. of Boxes</Label>
+                     <p>{viewInvoice.noOfBoxes || '-'}</p>
+                   </div>
+                 </div>
+               </div>
+
+               {/* IRN and ACK */}
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="border rounded-lg p-4">
+                   <Label>IRN</Label>
+                   <p>{viewInvoice.irn || '-'}</p>
+                 </div>
+                 <div className="border rounded-lg p-4">
+                   <Label>ACK No.</Label>
+                   <p>{viewInvoice.ackNo || '-'}</p>
+                 </div>
+               </div>
+
+               {/* Billed To and Shipped To */}
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="border rounded-lg p-4 space-y-2 text-sm">
+                   <h3 className="font-semibold">Billed To</h3>
+                   <div>
+                     <Label>Name</Label>
+                     <p>{viewInvoice.billedToName || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Address</Label>
+                     <p className="whitespace-pre-wrap">{viewInvoice.billedToAddress || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>State</Label>
+                     <p>{viewInvoice.billedToState || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>GSTIN</Label>
+                     <p>{viewInvoice.billedToGSTIN || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>P.A. No.</Label>
+                     <p>{viewInvoice.billedToPANo || '-'}</p>
+                   </div>
+                 </div>
+
+                 <div className="border rounded-lg p-4 space-y-2 text-sm">
+                   <h3 className="font-semibold">Shipped To</h3>
+                   <div>
+                     <Label>Name</Label>
+                     <p>{viewInvoice.shippedToName || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>Address</Label>
+                     <p className="whitespace-pre-wrap">{viewInvoice.shippedToAddress || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>State</Label>
+                     <p>{viewInvoice.shippedToState || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>GSTIN</Label>
+                     <p>{viewInvoice.shippedToGSTIN || '-'}</p>
+                   </div>
+                   <div>
+                     <Label>P.A. No.</Label>
+                     <p>{viewInvoice.shippedToPANo || '-'}</p>
+                   </div>
+                 </div>
+               </div>
+
+               {/* Items */}
+               <div>
+                 <Label className="text-base font-semibold">Items</Label>
+                 <Table>
+                   <TableHeader>
+                     <TableRow>
+                       <TableHead>S.No</TableHead>
+                       <TableHead>Description</TableHead>
+                       <TableHead>HSN/SAC Code</TableHead>
+                       <TableHead className="text-center">Quantity</TableHead>
+                       <TableHead className="text-right">Price</TableHead>
+                       <TableHead className="text-center">Per</TableHead>
+                       <TableHead className="text-right">Amount</TableHead>
+                     </TableRow>
+                   </TableHeader>
+                   <TableBody>
+                     {viewInvoice.items?.map((item: any, idx: number) => (
+                       <TableRow key={item.id}>
+                         <TableCell>{idx + 1}</TableCell>
+                         <TableCell>{item.description || item.product?.name}</TableCell>
+                         <TableCell>{item.hsnCode || '-'}</TableCell>
+                         <TableCell className="text-center">{item.quantity}</TableCell>
+                         <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
+                         <TableCell className="text-center">{item.per || item.product?.unit}</TableCell>
+                         <TableCell className="text-right">{formatCurrency(item.subtotal)}</TableCell>
+                       </TableRow>
+                     ))}
+                   </TableBody>
+                 </Table>
+               </div>
+
+               {/* Tax Summary */}
+               <div className="grid grid-cols-2 gap-4">
+                 <div />
+                 <div className="border rounded-lg p-4 space-y-2 text-sm">
+                   <div className="flex justify-between">
+                     <span>Subtotal:</span>
+                     <span className="font-medium">{formatCurrency(viewInvoice.totalAmount)}</span>
+                   </div>
+                   {viewInvoice.discountAmount > 0 && (
+                     <div className="flex justify-between text-orange-600">
+                       <span>Discount ({viewInvoice.discountRate}%):</span>
+                       <span>-{formatCurrency(viewInvoice.discountAmount)}</span>
+                     </div>
+                   )}
+                   <div className="flex justify-between border-t pt-2">
+                     <span>After Discount:</span>
+                     <span className="font-medium">{formatCurrency(viewInvoice.totalAmount - viewInvoice.discountAmount)}</span>
+                   </div>
+                   {viewInvoice.sgstAmount > 0 && (
+                     <div className="flex justify-between">
+                       <span>SGST ({viewInvoice.sgstRate}%):</span>
+                       <span>{formatCurrency(viewInvoice.sgstAmount)}</span>
+                     </div>
+                   )}
+                   {viewInvoice.cgstAmount > 0 && (
+                     <div className="flex justify-between">
+                       <span>CGST ({viewInvoice.cgstRate}%):</span>
+                       <span>{formatCurrency(viewInvoice.cgstAmount)}</span>
+                     </div>
+                   )}
+                   {viewInvoice.igstAmount > 0 && (
+                     <div className="flex justify-between">
+                       <span>IGST ({viewInvoice.igstRate}%):</span>
+                       <span>{formatCurrency(viewInvoice.igstAmount)}</span>
+                     </div>
+                   )}
+                   <div className="flex justify-between font-bold border-t pt-2 text-base">
+                     <span>Total Amount:</span>
+                     <span>{formatCurrency(viewInvoice.netAmount)}</span>
+                   </div>
+                 </div>
+               </div>
+
+               {/* Bank Details */}
+               {(viewInvoice.bankDetails || viewInvoice.branch || viewInvoice.rtgsNeftIfscCode) && (
+                 <div className="border rounded-lg p-4 space-y-3">
+                   <h3 className="font-semibold">Bank Details</h3>
+                   <div className="grid grid-cols-2 gap-3 text-sm">
+                     {viewInvoice.bankDetails && (
+                       <div className="col-span-2">
+                         <Label>Bank Details</Label>
+                         <p className="whitespace-pre-wrap">{viewInvoice.bankDetails}</p>
+                       </div>
+                     )}
+                     {viewInvoice.branch && (
+                       <div>
+                         <Label>Branch</Label>
+                         <p>{viewInvoice.branch}</p>
+                       </div>
+                     )}
+                     {viewInvoice.rtgsNeftIfscCode && (
+                       <div>
+                         <Label>RTGS/NEFT/IFSC Code</Label>
+                         <p>{viewInvoice.rtgsNeftIfscCode}</p>
+                       </div>
+                     )}
+                   </div>
+                 </div>
+               )}
+
+               {/* Terms & Conditions */}
+               {viewInvoice.termsAndConditions && (
+                 <div className="border rounded-lg p-4 space-y-2">
+                   <h3 className="font-semibold">Terms & Conditions</h3>
+                   <p className="whitespace-pre-wrap text-sm">{viewInvoice.termsAndConditions}</p>
+                 </div>
+               )}
+             </div>
+           </DialogContent>
+         </Dialog>
+       )}
     </div>
   )
 }

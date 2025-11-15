@@ -16,7 +16,7 @@ router.post(
     body('name').trim().notEmpty(),
     body('role').isIn(['ADMIN', 'EMPLOYEE']).optional(),
   ],
-  async (req, res) => {
+  async (req: any, res: any) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -65,7 +65,7 @@ router.post(
     body('email').isEmail().normalizeEmail(),
     body('password').notEmpty(),
   ],
-  async (req, res) => {
+  async (req: any, res: any) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
