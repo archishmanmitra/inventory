@@ -230,7 +230,7 @@ export default function Invoices() {
                         <TableHeader>
                         <TableRow>
                         <TableHead>Invoice Number</TableHead>
-                        <TableHead>Amount</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
