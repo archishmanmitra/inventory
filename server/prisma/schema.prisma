@@ -115,6 +115,10 @@ model Invoice {
   signatureBy           String?
   signatureDate         DateTime?
   
+  // Footer Section - Editable GSTIN and P.A. No.
+  footerGSTIN           String?
+  footerPANo            String?
+  
   // Totals
   totalAmount           Float?
   transportAmount      Float?    @default(0)

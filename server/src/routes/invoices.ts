@@ -204,6 +204,9 @@ router.post(
         // Signature
         signatureBy,
         signatureDate,
+        // Footer Section
+        footerGSTIN,
+        footerPANo,
         // Adjusted total from frontend
         adjustedTotal,
       } = req.body;
@@ -354,6 +357,9 @@ router.post(
           // Signature
           signatureBy: signatureBy || "",
           signatureDate: signatureDate ? new Date(signatureDate) : null,
+          // Footer Section
+          footerGSTIN: footerGSTIN || "19AZEPR3832Q1ZL",
+          footerPANo: footerPANo || "",
           // Totals
           totalAmount,
           discountAmount,
@@ -1157,10 +1163,10 @@ function generateInvoiceHTML(
           <!-- GSTIN and P.A.No Row -->
           <div style="display: flex; gap: 20px; margin-bottom: 10px; font-size: 10px;">
             <div style="flex: 1;">
-              <span style="font-weight: bold;">GSTIN:</span> <span>${letterhead.gstin || "-"}</span>
+              <span style="font-weight: bold;">GSTIN:</span> <span>${invoice.footerGSTIN || letterhead.gstin || "-"}</span>
             </div>
             <div style="flex: 1; text-align: right;">
-              <span style="font-weight: bold;"></span> <span></span>
+              <span style="font-weight: bold;">P.A. No.:</span> <span>${invoice.footerPANo || "-"}</span>
             </div>
           </div>
 

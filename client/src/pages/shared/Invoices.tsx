@@ -823,11 +823,11 @@ export default function Invoices() {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <Label>GSTIN</Label>
-                    <p className="font-medium">19AZEPR3832Q1ZL</p>
+                    <p className="font-medium">{viewInvoice.footerGSTIN || "19AZEPR3832Q1ZL"}</p>
                   </div>
                   <div>
                     <Label>P.A. No.</Label>
-                    <p>-</p>
+                    <p className="font-medium">{viewInvoice.footerPANo || "-"}</p>
                   </div>
                 </div>
 

@@ -97,6 +97,9 @@ export default function InvoiceFormNew({
     // Signature
     signatureBy: "",
     signatureDate: new Date().toISOString().split("T")[0],
+    // Footer Section
+    footerGSTIN: "19AZEPR3832Q1ZL",
+    footerPANo: "",
   });
 
   useEffect(() => {
@@ -215,6 +218,8 @@ export default function InvoiceFormNew({
         termsAndConditions: DEFAULT_TERMS,
         signatureBy: "",
         signatureDate: new Date().toISOString().split("T")[0],
+        footerGSTIN: "19AZEPR3832Q1ZL",
+        footerPANo: "",
       });
       if (onSuccess) onSuccess();
       setItems([{ productId: "", quantity: 1 }]);
@@ -1073,11 +1078,23 @@ export default function InvoiceFormNew({
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-3 bg-gray-50 rounded border">
                 <div>
                   <Label className="text-sm font-semibold">GSTIN</Label>
-                  <p className="text-sm text-gray-600">19AZEPR3832Q1ZL</p>
+                  <Input
+                    name="footerGSTIN"
+                    value={formData.footerGSTIN}
+                    onChange={handleInputChange}
+                    placeholder="GSTIN"
+                    className="h-9 text-sm mt-1"
+                  />
                 </div>
                 <div>
                   <Label className="text-sm font-semibold">P.A. No.</Label>
-                  <p className="text-sm text-gray-600">-</p>
+                  <Input
+                    name="footerPANo"
+                    value={formData.footerPANo}
+                    onChange={handleInputChange}
+                    placeholder="P.A. No."
+                    className="h-9 text-sm mt-1"
+                  />
                 </div>
               </div>
 
