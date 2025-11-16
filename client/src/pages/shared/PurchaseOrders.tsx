@@ -501,6 +501,12 @@ export default function PurchaseOrders() {
                       <span>{formatCurrency(viewPO.igstAmount)}</span>
                       </div>
                       )}
+                      {(viewPO.sgstAmount > 0 || viewPO.cgstAmount > 0 || viewPO.igstAmount > 0) && (
+                      <div className="flex justify-between border-t pt-2">
+                      <span>Subtotal After Taxes:</span>
+                      <span className="font-medium">{formatCurrency(Math.floor(((viewPO.totalAmount || 0) - (viewPO.discountAmount || 0) + (viewPO.sgstAmount || 0) + (viewPO.cgstAmount || 0) + (viewPO.igstAmount || 0)) * 100) / 100)}</span>
+                      </div>
+                      )}
                       <div className="flex justify-between font-bold border-t pt-2 text-base">
                       <span>Net PO Amount:</span>
                       <span>{formatCurrency(viewPO.netAmount || viewPO.totalAmount || 0)}</span>

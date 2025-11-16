@@ -207,7 +207,8 @@ router.post(
       const igstAmount = igstEnabled ? (subtotalAfterDiscount * igstRate) / 100 : 0;
       const sgstAmount = sgstEnabled ? (subtotalAfterDiscount * sgstRate) / 100 : 0;
       const cgstAmount = cgstEnabled ? (subtotalAfterDiscount * cgstRate) / 100 : 0;
-      const netAmount = subtotalAfterDiscount + igstAmount + sgstAmount + cgstAmount;
+      const subtotalAfterTaxes = subtotalAfterDiscount + igstAmount + sgstAmount + cgstAmount;
+      const netAmount = Math.floor(subtotalAfterTaxes);
 
       // Create purchase order with items
       const purchaseOrder = await prisma.purchaseOrder.create({
@@ -819,6 +820,18 @@ function generatePurchaseOrderHTML(purchaseOrder: any, letterhead: any, logoBase
                   ? `<div class="summary-row"><span>IGST (${purchaseOrder.igstRate}%):</span><span>₹${purchaseOrder.igstAmount.toFixed(2)}</span></div>`
                   : ''
               }
+              ${
+                (purchaseOrder.sgstAmount && purchaseOrder.sgstAmount > 0) || (purchaseOrder.cgstAmount && purchaseOrder.cgstAmount > 0) || (purchaseOrder.igstAmount && purchaseOrder.igstAmount > 0)
+                  ? (() => {
+                      const subtotalAfterTaxes = ((purchaseOrder.totalAmount || 0) - (purchaseOrder.discountAmount || 0) + (purchaseOrder.sgstAmount || 0) + (purchaseOrder.cgstAmount || 0) + (purchaseOrder.igstAmount || 0));
+                      return `<div class="summary-row" style="border-top: 1px solid #333; padding-top: 6px;"><span>Subtotal After Taxes:</span><span>₹${subtotalAfterTaxes.toFixed(2)}</span></div>`;
+                    })()
+                  : ''
+              }
+              <div class="summary-row" style="color: #0066cc; font-weight: bold;">
+                <span>Adjusted Total:</span>
+                <span>₹${(purchaseOrder.netAmount || 0).toFixed(2)}</span>
+              </div>
               <div class="summary-row total">
                 <span>Net PO Amount</span>
                 <span>₹${(purchaseOrder.netAmount || purchaseOrder.totalAmount || 0).toFixed(2)}</span>

@@ -202,6 +202,7 @@ export default function PurchaseOrderFormNew({ onSuccess }: { onSuccess?: () => 
     const igstAmount = formData.igstEnabled ? (subtotalAfterDiscount * formData.igstRate) / 100 : 0;
     const sgstAmount = formData.sgstEnabled ? (subtotalAfterDiscount * formData.sgstRate) / 100 : 0;
     const cgstAmount = formData.cgstEnabled ? (subtotalAfterDiscount * formData.cgstRate) / 100 : 0;
+    const calculatedTotal = Math.floor(Math.abs(subtotalAfterDiscount + igstAmount + sgstAmount + cgstAmount) * 100) / 100;
 
     return {
       subtotal,
@@ -210,7 +211,7 @@ export default function PurchaseOrderFormNew({ onSuccess }: { onSuccess?: () => 
       igstAmount,
       sgstAmount,
       cgstAmount,
-      total: subtotalAfterDiscount + igstAmount + sgstAmount + cgstAmount,
+      total: calculatedTotal,
     };
   };
 
@@ -652,9 +653,19 @@ export default function PurchaseOrderFormNew({ onSuccess }: { onSuccess?: () => 
                       <span className="font-semibold">₹{totals.cgstAmount.toFixed(2)}</span>
                     </div>
                   )}
+                  {(totals.sgstAmount > 0 || totals.cgstAmount > 0 || totals.igstAmount > 0) && (
+                    <div className="flex justify-between border-t pt-2 font-semibold">
+                      <span>Subtotal After Taxes:</span>
+                      <span>₹{((totals.subtotalAfterDiscount + totals.sgstAmount + totals.cgstAmount + totals.igstAmount).toFixed(2))}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-blue-600 border-t pt-2">
+                    <span>Adjusted Total:</span>
+                    <span className="font-semibold">₹{Math.floor(totals.subtotalAfterDiscount + totals.sgstAmount + totals.cgstAmount + totals.igstAmount).toFixed(2)}</span>
+                  </div>
                   <div className="border-t pt-2 font-bold flex justify-between text-base">
                     <span>Net PO Amount:</span>
-                    <span>₹{totals.total.toFixed(2)}</span>
+                    <span>₹{Math.floor(totals.subtotalAfterDiscount + totals.sgstAmount + totals.cgstAmount + totals.igstAmount).toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>
