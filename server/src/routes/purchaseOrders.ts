@@ -495,7 +495,8 @@ router.get('/:id/pdf', async (req: AuthRequest, res: any) => {
 
     browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    // Set longer timeout for PDF generation
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
     const pdf = await page.pdf({ format: 'A4' });
 
     // Set response headers for PDF download

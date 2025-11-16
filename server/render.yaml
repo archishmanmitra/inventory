@@ -3,6 +3,7 @@ services:
     name: inventory-server
     env: node
     plan: standard
+    numInstances: 1
     buildCommand: >
       npm install &&
       npx puppeteer browsers install chrome &&
