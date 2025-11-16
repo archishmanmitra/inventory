@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Download } from 'lucide-react';
+import { Plus, Download, Trash2 } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -114,6 +114,7 @@ export default function PurchaseOrderFormNew({ onSuccess }: { onSuccess?: () => 
   const handleRemoveItem = (index: number) => {
     if (items.length > 1) {
       setItems(items.filter((_, i) => i !== index));
+      toast.success('Item deleted');
     }
   };
 
@@ -407,7 +408,8 @@ export default function PurchaseOrderFormNew({ onSuccess }: { onSuccess?: () => 
                       <th className="border-r px-3 py-2 text-center">Quantity</th>
                       <th className="border-r px-3 py-2 text-center">Discount %</th>
                       <th className="border-r px-3 py-2 text-center">Rate/Unit</th>
-                      <th className="px-3 py-2 text-right">Value</th>
+                      <th className="border-r px-3 py-2 text-right">Value</th>
+                      <th className="px-3 py-2 text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -472,13 +474,26 @@ export default function PurchaseOrderFormNew({ onSuccess }: { onSuccess?: () => 
                               placeholder={product?.cost.toString()}
                             />
                           </td>
-                          <td className="px-3 py-2 text-right font-semibold">₹{value.toFixed(2)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                          <td className="border-r px-3 py-2 text-right font-semibold">₹{value.toFixed(2)}</td>
+                          <td className="px-3 py-2 text-center">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveItem(index)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              disabled={items.length === 1}
+                              title={items.length === 1 ? "Cannot delete the last item" : "Delete row"}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                          </tr>
+                          );
+                          })}
+                          </tbody>
+                          </table>
+                          </div>
 
               <Button
                 type="button"

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import {  Plus, Download } from 'lucide-react';
+import {  Plus, Download, Trash2 } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -126,6 +126,14 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
+  };
+
+  const handleDeleteItem = (index: number) => {
+    if (items.length > 1) {
+      const newItems = items.filter((_, i) => i !== index);
+      setItems(newItems);
+      toast.success('Item deleted');
+    }
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -607,7 +615,8 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
                       <th className="border-r px-3 py-2 text-center">Quantity</th>
                       <th className="border-r px-3 py-2 text-center">Rate</th>
                       <th className="border-r px-3 py-2 text-center">Per</th>
-                      <th className="px-3 py-2 text-right">Amount</th>
+                      <th className="border-r px-3 py-2 text-right">Amount</th>
+                      <th className="px-3 py-2 text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -668,13 +677,26 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
                               placeholder={product?.unit || 'pcs'}
                             />
                           </td>
-                          <td className="px-3 py-2 text-right font-semibold">₹{amount.toFixed(2)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                          <td className="border-r px-3 py-2 text-right font-semibold">₹{amount.toFixed(2)}</td>
+                          <td className="px-3 py-2 text-center">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteItem(index)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              disabled={items.length === 1}
+                              title={items.length === 1 ? "Cannot delete the last item" : "Delete row"}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                          </tr>
+                          );
+                          })}
+                          </tbody>
+                          </table>
+                          </div>
 
               <Button
                 type="button"
