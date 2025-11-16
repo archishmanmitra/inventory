@@ -110,6 +110,10 @@ model Invoice {
   
   // Terms & Conditions
   termsAndConditions    String?
+
+  //Signature
+  signatureBy           String?
+  signatureDate         DateTime?
   
   // Totals
   totalAmount           Float?
