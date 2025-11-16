@@ -198,6 +198,8 @@ router.post(
         rtgsNeftIfscCode,
         // Terms
         termsAndConditions,
+        // Adjusted total from frontend
+        adjustedTotal,
       } = req.body;
 
       // Generate invoice number
@@ -247,7 +249,8 @@ router.post(
       const sgstAmount = sgstEnabled ? (subtotalAfterDiscount * sgstRate) / 100 : 0;
       const cgstAmount = cgstEnabled ? (subtotalAfterDiscount * cgstRate) / 100 : 0;
       const igstAmount = igstEnabled ? (subtotalAfterDiscount * igstRate) / 100 : 0;
-      const netAmount = subtotalAfterDiscount + sgstAmount + cgstAmount + igstAmount;
+      const calculatedTotal = Math.round(Math.abs(subtotalAfterDiscount + sgstAmount + cgstAmount + igstAmount) * 100) / 100;
+      const netAmount = adjustedTotal || calculatedTotal;
 
       // Create invoice with items
       const invoice = await prisma.invoice.create({
@@ -836,13 +839,13 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
               </div>
               ${
                 invoice.discountAmount > 0
-                  ? `<div class="summary-row"><span>Discount (${invoice.discountRate}%):</span><span>-₹${invoice.discountAmount.toFixed(2)}</span></div>`
+                  ? `<div class="summary-row"><span>Discount (${invoice.discountRate}%):</span><span>-₹${invoice.discountAmount.toFixed(2)}</span></div>
+                     <div class="summary-row">
+                       <span>Subtotal After Discount:</span>
+                       <span>₹${(invoice.totalAmount - invoice.discountAmount).toFixed(2)}</span>
+                     </div>`
                   : ''
               }
-              <div class="summary-row">
-                <span>Subtotal After Discount:</span>
-                <span>₹${(invoice.totalAmount - invoice.discountAmount).toFixed(2)}</span>
-              </div>
               ${
                 invoice.sgstAmount > 0
                   ? `<div class="summary-row"><span>SGST (${invoice.sgstRate}%):</span><span>₹${invoice.sgstAmount.toFixed(2)}</span></div>`
@@ -858,6 +861,18 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
                   ? `<div class="summary-row"><span>IGST (${invoice.igstRate}%):</span><span>₹${invoice.igstAmount.toFixed(2)}</span></div>`
                   : ''
               }
+              ${
+                (invoice.sgstAmount > 0 || invoice.cgstAmount > 0 || invoice.igstAmount > 0)
+                  ? `<div class="summary-row">
+                      <span>Subtotal After Taxes:</span>
+                      <span>₹${(invoice.totalAmount + (invoice.discountAmount > 0 ? invoice.discountAmount : 0) + (invoice.sgstAmount > 0 ? invoice.sgstAmount : 0) + (invoice.cgstAmount > 0 ? invoice.cgstAmount : 0) + (invoice.igstAmount > 0 ? invoice.igstAmount : 0)).toFixed(2)}</span>
+                    </div>`
+                  : ''
+              }
+              <div class="summary-row" style="color: #0066cc; font-weight: bold;">
+                <span>Adjusted Total:</span>
+                <span>₹${invoice.netAmount.toFixed(2)}</span>
+              </div>
               <div class="summary-row total">
                 <span>Total Amount:</span>
                 <span>₹${invoice.netAmount.toFixed(2)}</span>

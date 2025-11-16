@@ -120,12 +120,6 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
     setItems([...items, { productId: '', quantity: 1 }]);
   };
 
-  const handleRemoveItem = (index: number) => {
-    if (items.length > 1) {
-      setItems(items.filter((_, i) => i !== index));
-    }
-  };
-
   const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
@@ -142,7 +136,9 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
 
     setLoading(true);
     try {
-      const response = await api.post('/invoices', { ...formData, items });
+      const totals = calculateTotals();
+      const adjustedTotal = Math.round(Math.abs(totals.total));
+      const response = await api.post('/invoices', { ...formData, items, adjustedTotal });
       setCreatedInvoiceId(response.data.id);
       toast.success('Invoice created successfully');
       // Reset form
@@ -796,15 +792,17 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
                     <span className="font-semibold">₹{totals.subtotal.toFixed(2)}</span>
                   </div>
                   {totals.discountAmount > 0 && (
-                    <div className="flex justify-between text-orange-600">
-                      <span>Discount ({formData.discountRate}%):</span>
-                      <span className="font-semibold">-₹{totals.discountAmount.toFixed(2)}</span>
-                    </div>
+                    <>
+                      <div className="flex justify-between text-orange-600">
+                        <span>Discount ({formData.discountRate}%):</span>
+                        <span className="font-semibold">-₹{totals.discountAmount.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between font-semibold border-t pt-2">
+                        <span>After Discount:</span>
+                        <span>₹{totals.subtotalAfterDiscount.toFixed(2)}</span>
+                      </div>
+                    </>
                   )}
-                  <div className="flex justify-between font-semibold border-t pt-2">
-                    <span>After Discount:</span>
-                    <span>₹{totals.subtotalAfterDiscount.toFixed(2)}</span>
-                  </div>
                   {totals.igstAmount > 0 && (
                     <div className="flex justify-between">
                       <span>IGST ({formData.igstRate}%):</span>
@@ -823,9 +821,19 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
                       <span className="font-semibold">₹{totals.cgstAmount.toFixed(2)}</span>
                     </div>
                   )}
+                  {(totals.sgstAmount > 0 || totals.cgstAmount > 0 || totals.igstAmount > 0) && (
+                    <div className="flex justify-between font-semibold border-t pt-2">
+                      <span>Subtotal After Tax:</span>
+                      <span>₹{totals.total.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-blue-600">
+                    <span>Adjusted Total:</span>
+                    <span className="font-semibold">₹{Math.round(Math.abs(totals.total)).toFixed(2)}</span>
+                  </div>
                   <div className="border-t pt-2 font-bold flex justify-between text-base">
-                    <span>Total:</span>
-                    <span>₹{totals.total.toFixed(2)}</span>
+                    <span>Total Amount:</span>
+                    <span>₹{Math.round(Math.abs(totals.total)).toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>

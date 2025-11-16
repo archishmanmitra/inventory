@@ -596,15 +596,17 @@ export default function Invoices() {
                      <span className="font-medium">{formatCurrency(viewInvoice.totalAmount)}</span>
                    </div>
                    {viewInvoice.discountAmount > 0 && (
-                     <div className="flex justify-between text-orange-600">
-                       <span>Discount ({viewInvoice.discountRate}%):</span>
-                       <span>-{formatCurrency(viewInvoice.discountAmount)}</span>
-                     </div>
+                     <>
+                       <div className="flex justify-between text-orange-600">
+                         <span>Discount ({viewInvoice.discountRate}%):</span>
+                         <span>-{formatCurrency(viewInvoice.discountAmount)}</span>
+                       </div>
+                       <div className="flex justify-between border-t pt-2">
+                         <span>Subtotal After Discount:</span>
+                         <span className="font-medium">{formatCurrency(viewInvoice.totalAmount - viewInvoice.discountAmount)}</span>
+                       </div>
+                     </>
                    )}
-                   <div className="flex justify-between border-t pt-2">
-                     <span>After Discount:</span>
-                     <span className="font-medium">{formatCurrency(viewInvoice.totalAmount - viewInvoice.discountAmount)}</span>
-                   </div>
                    {viewInvoice.sgstAmount > 0 && (
                      <div className="flex justify-between">
                        <span>SGST ({viewInvoice.sgstRate}%):</span>
@@ -623,6 +625,16 @@ export default function Invoices() {
                        <span>{formatCurrency(viewInvoice.igstAmount)}</span>
                      </div>
                    )}
+                   {(viewInvoice.sgstAmount > 0 || viewInvoice.cgstAmount > 0 || viewInvoice.igstAmount > 0) && (
+                     <div className="flex justify-between border-t pt-2">
+                       <span>Subtotal After Taxes:</span>
+                       <span className="font-medium">{formatCurrency(viewInvoice.netAmount)}</span>
+                     </div>
+                   )}
+                   <div className="flex justify-between text-blue-600">
+                     <span>Adjusted Total:</span>
+                     <span className="font-medium">{formatCurrency(viewInvoice.netAmount)}</span>
+                   </div>
                    <div className="flex justify-between font-bold border-t pt-2 text-base">
                      <span>Total Amount:</span>
                      <span>{formatCurrency(viewInvoice.netAmount)}</span>
