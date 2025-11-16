@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore'
 import api from '../lib/api'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
+import { PasswordInput } from '../components/ui/password-input'
 import { Card, CardContent } from '../components/ui/card'
 import { toast } from 'sonner'
 import { Package, Mail, Lock, ArrowRight } from 'lucide-react'
@@ -98,9 +99,8 @@ export default function Login() {
                   <span className="text-sm font-semibold text-gray-800">Password</span>
                 </label>
                 <div className="relative">
-                  <Input
+                  <PasswordInput
                     id="password"
-                    type="password"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -110,15 +110,12 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Remember & Forgot */}
-              <div className="flex items-center justify-between text-sm">
+              {/* Remember */}
+              <div className="flex items-center text-sm">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-blue-600" />
                   <span className="text-gray-600 font-medium">Remember me</span>
                 </label>
-                <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
-                  Forgot password?
-                </a>
               </div>
 
               {/* Sign In Button */}
