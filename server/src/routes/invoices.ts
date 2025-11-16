@@ -587,7 +587,7 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
     )
     .join('');
 
-  const logoHtml = logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="height: 80px; margin-bottom: 15px;">` : '';
+  const logoHtml = logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="width: 100px; height: auto; margin-bottom: 15px;">` : '';
 
   return `
     <!DOCTYPE html>
@@ -607,18 +607,18 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          margin-bottom: 15px;
+          margin-bottom: 0px;
           border-bottom: 2px solid #333;
-          padding-bottom: 10px;
+          padding-bottom: 0px;
         }
-        .logo { flex-shrink: 0; width: 80px; }
-        .logo img { width: 80px; height: 100px; }
+        .logo { flex-shrink: 0; width: 100px; }
+        .logo img { width: 100px; height: auto; }
         .company-info {
           text-align: center;
-          flex: 1;
+          flex: 1.5;
           padding: 0 10px;
-          margin-left: 80px;
-          margin-right: 80px;
+          margin-left: 0;
+          margin-right: 0;
         }
         .letterhead-spacer { width: 80px; }  
         .company-name { font-size: 18px; font-weight: bold; margin-bottom: 3px; }
