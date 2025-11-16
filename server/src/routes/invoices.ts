@@ -1,23 +1,24 @@
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
-import { body, validationResult } from 'express-validator';
-import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
-import fs from 'fs';
-import path from 'path';
-import puppeteer from 'puppeteer';
+import express from "express";
+import { PrismaClient } from "@prisma/client";
+import { body, validationResult } from "express-validator";
+import { authenticate, requireAdmin, AuthRequest } from "../middleware/auth";
+import fs from "fs";
+import path from "path";
+import puppeteer from "puppeteer";
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // Letterhead data
 const LETTERHEAD = {
-  companyName: 'M/S ROY ENTERPRISE',
-  tagline: 'AN ISO 9001:2015 & 45001:2018 CERTIFIED CO. (MSME REGISTERED CO.)',
-  address: 'OFFICE: 37/2 KAMINI SCHOOL LANE, SALKIA, HOWRAH - 711 106 (WEST BENGAL)',
-  contact: '(+91)9831061571',
-  email: 'msroyenterpriseindia@gmail.com',
-  gstin: '19AZEPR3832Q1ZL',
-  logoPath: 'assets/letterhead.png', // Path to logo file
+  companyName: "M/S ROY ENTERPRISE",
+  tagline: "AN ISO 9001:2015 & 45001:2018 CERTIFIED CO. (MSME REGISTERED CO.)",
+  address:
+    "OFFICE: 37/2 KAMINI SCHOOL LANE, SALKIA, HOWRAH - 711 106 (WEST BENGAL)",
+  contact: "(+91)9831061571",
+  email: "msroyenterpriseindia@gmail.com",
+  gstin: "19AZEPR3832Q1ZL",
+  logoPath: "assets/letterhead.png", // Path to logo file
 };
 
 // Load logo as base64
@@ -26,21 +27,21 @@ function getLogoBase64(): string {
     const logoPath = path.join(process.cwd(), LETTERHEAD.logoPath);
     if (fs.existsSync(logoPath)) {
       const logoBuffer = fs.readFileSync(logoPath);
-      return `data:image/png;base64,${logoBuffer.toString('base64')}`;
+      return `data:image/png;base64,${logoBuffer.toString("base64")}`;
     }
   } catch (error) {
-    console.error('Error loading logo:', error);
+    console.error("Error loading logo:", error);
   }
-  return '';
+  return "";
 }
 
 // Get all invoices (Admin sees all, Employee sees own)
-router.get('/',  async (req: AuthRequest, res) => {
+router.get("/", async (req: AuthRequest, res) => {
   try {
     const where: any = {};
 
     // Employees can only see their own invoices
-    if (req.user?.role === 'EMPLOYEE') {
+    if (req.user?.role === "EMPLOYEE") {
       where.userId = req.user.id;
     }
 
@@ -67,7 +68,7 @@ router.get('/',  async (req: AuthRequest, res) => {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     // Format response to include net amount if not present
@@ -78,18 +79,18 @@ router.get('/',  async (req: AuthRequest, res) => {
 
     res.json(formattedInvoices);
   } catch (error) {
-    console.error('Get invoices error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Get invoices error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // Get single invoice
-router.get('/:id', async (req: AuthRequest, res) => {
+router.get("/:id", async (req: AuthRequest, res) => {
   try {
     const where: any = { id: req.params.id };
 
     // Employees can only see their own invoices
-    if (req.user?.role === 'EMPLOYEE') {
+    if (req.user?.role === "EMPLOYEE") {
       where.userId = req.user.id;
     }
 
@@ -120,24 +121,24 @@ router.get('/:id', async (req: AuthRequest, res) => {
     });
 
     if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found' });
+      return res.status(404).json({ error: "Invoice not found" });
     }
 
     res.json(invoice);
   } catch (error) {
-    console.error('Get invoice error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Get invoice error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // Create invoice
 router.post(
-  '/',
+  "/",
   authenticate,
   [
-    body('items').isArray({ min: 1 }),
-    body('items.*.productId').notEmpty(),
-    body('items.*.quantity').isInt({ min: 1 }),
+    body("items").isArray({ min: 1 }),
+    body("items.*.productId").notEmpty(),
+    body("items.*.quantity").isInt({ min: 1 }),
   ],
   async (req: AuthRequest, res: any) => {
     try {
@@ -200,16 +201,28 @@ router.post(
         rtgsNeftIfscCode,
         // Terms
         termsAndConditions,
+        // Signature
+        signatureBy,
+        signatureDate,
         // Adjusted total from frontend
         adjustedTotal,
-        } = req.body;
+      } = req.body;
 
       // Convert numeric strings to numbers
-      const discountRateNum = typeof discountRate === 'string' ? parseFloat(discountRate) : discountRate;
-      const transportChargesNum = typeof transportCharges === 'string' ? parseFloat(transportCharges) : transportCharges;
-      const igstRateNum = typeof igstRate === 'string' ? parseFloat(igstRate) : igstRate;
-      const sgstRateNum = typeof sgstRate === 'string' ? parseFloat(sgstRate) : sgstRate;
-      const cgstRateNum = typeof cgstRate === 'string' ? parseFloat(cgstRate) : cgstRate;
+      const discountRateNum =
+        typeof discountRate === "string"
+          ? parseFloat(discountRate)
+          : discountRate;
+      const transportChargesNum =
+        typeof transportCharges === "string"
+          ? parseFloat(transportCharges)
+          : transportCharges;
+      const igstRateNum =
+        typeof igstRate === "string" ? parseFloat(igstRate) : igstRate;
+      const sgstRateNum =
+        typeof sgstRate === "string" ? parseFloat(sgstRate) : sgstRate;
+      const cgstRateNum =
+        typeof cgstRate === "string" ? parseFloat(cgstRate) : cgstRate;
 
       // Generate invoice number
       const count = await prisma.invoice.count();
@@ -225,7 +238,9 @@ router.post(
         });
 
         if (!product) {
-          return res.status(404).json({ error: `Product ${item.productId} not found` });
+          return res
+            .status(404)
+            .json({ error: `Product ${item.productId} not found` });
         }
 
         // Check if there's enough stock
@@ -245,24 +260,40 @@ router.post(
           price,
           subtotal,
           description: item.description || product.name,
-          hsnCode: item.hsnCode || '',
-          per: item.per || product.unit || 'pcs',
+          hsnCode: item.hsnCode || "",
+          per: item.per || product.unit || "pcs",
         });
       }
 
       // Calculate discount
-      const discountAmount = discountEnabled ? (totalAmount * discountRateNum) / 100 : 0;
+      const discountAmount = discountEnabled
+        ? (totalAmount * discountRateNum) / 100
+        : 0;
       const subtotalAfterDiscount = totalAmount - discountAmount;
 
       // Calculate transport charges
-      const finalTransportCharges = transportChargesEnabled ? transportChargesNum : 0;
-      const subtotalAfterTransport = subtotalAfterDiscount + finalTransportCharges;
+      const finalTransportCharges = transportChargesEnabled
+        ? transportChargesNum
+        : 0;
+      const subtotalAfterTransport =
+        subtotalAfterDiscount + finalTransportCharges;
 
       // Calculate taxes (applied after discount and transport charges)
-      const sgstAmount = sgstEnabled ? (subtotalAfterTransport * sgstRateNum) / 100 : 0;
-      const cgstAmount = cgstEnabled ? (subtotalAfterTransport * cgstRateNum) / 100 : 0;
-      const igstAmount = igstEnabled ? (subtotalAfterTransport * igstRateNum) / 100 : 0;
-      const calculatedTotal = Math.floor(Math.abs(subtotalAfterTransport + sgstAmount + cgstAmount + igstAmount) * 100) / 100;
+      const sgstAmount = sgstEnabled
+        ? (subtotalAfterTransport * sgstRateNum) / 100
+        : 0;
+      const cgstAmount = cgstEnabled
+        ? (subtotalAfterTransport * cgstRateNum) / 100
+        : 0;
+      const igstAmount = igstEnabled
+        ? (subtotalAfterTransport * igstRateNum) / 100
+        : 0;
+      const calculatedTotal =
+        Math.floor(
+          Math.abs(
+            subtotalAfterTransport + sgstAmount + cgstAmount + igstAmount
+          ) * 100
+        ) / 100;
       const netAmount = adjustedTotal || calculatedTotal;
 
       // Create invoice with items
@@ -271,40 +302,40 @@ router.post(
           invoiceNumber,
           userId: req.user!.id,
           // Tax Invoice Details
-          taxInvNo: taxInvNo || '',
+          taxInvNo: taxInvNo || "",
           taxInvDate: taxInvDate ? new Date(taxInvDate) : null,
-          chalanNo: chalanNo || '',
+          chalanNo: chalanNo || "",
           chalanDate: chalanDate ? new Date(chalanDate) : null,
-          orderNo: orderNo || '',
+          orderNo: orderNo || "",
           orderDate: orderDate ? new Date(orderDate) : null,
-          paymentTerm: paymentTerm || '',
+          paymentTerm: paymentTerm || "",
           dueOn: dueOn ? new Date(dueOn) : null,
-          brokerName: brokerName || '',
+          brokerName: brokerName || "",
           // IRN
-          irn: irn || '',
+          irn: irn || "",
           // Billed To
-          billedToName: billedToName || '',
-          billedToAddress: billedToAddress || '',
-          billedToState: billedToState || '',
-          billedToGSTIN: billedToGSTIN || '',
-          billedToPANo: billedToPANo || '',
+          billedToName: billedToName || "",
+          billedToAddress: billedToAddress || "",
+          billedToState: billedToState || "",
+          billedToGSTIN: billedToGSTIN || "",
+          billedToPANo: billedToPANo || "",
           // Transporter
-          transporterName: transporterName || '',
-          lrNo: lrNo || '',
+          transporterName: transporterName || "",
+          lrNo: lrNo || "",
           lrDate: lrDate ? new Date(lrDate) : null,
-          vehicleNo: vehicleNo || '',
-          placeOfSupply: placeOfSupply || '',
-          from: from || '',
-          to: to || '',
-          noOfBoxes: noOfBoxes || '',
+          vehicleNo: vehicleNo || "",
+          placeOfSupply: placeOfSupply || "",
+          from: from || "",
+          to: to || "",
+          noOfBoxes: noOfBoxes || "",
           // ACK
-          ackNo: ackNo || '',
+          ackNo: ackNo || "",
           // Shipped To
-          shippedToName: shippedToName || '',
-          shippedToAddress: shippedToAddress || '',
-          shippedToState: shippedToState || '',
-          shippedToGSTIN: shippedToGSTIN || '',
-          shippedToPANo: shippedToPANo || '',
+          shippedToName: shippedToName || "",
+          shippedToAddress: shippedToAddress || "",
+          shippedToState: shippedToState || "",
+          shippedToGSTIN: shippedToGSTIN || "",
+          shippedToPANo: shippedToPANo || "",
           // Tax settings
           discountEnabled,
           discountRate: discountRateNum,
@@ -314,14 +345,15 @@ router.post(
           sgstRate: sgstRateNum,
           cgstEnabled,
           cgstRate: cgstRateNum,
-          transportEnabled: transportChargesEnabled,
-          transportCharges: finalTransportCharges,
           // Bank Details
-          bankDetails: bankDetails || '',
-          branch: branch || '',
-          rtgsNeftIfscCode: rtgsNeftIfscCode || '',
+          bankDetails: bankDetails || "",
+          branch: branch || "",
+          rtgsNeftIfscCode: rtgsNeftIfscCode || "",
           // Terms
-          termsAndConditions: termsAndConditions || '',
+          termsAndConditions: termsAndConditions || "",
+          // Signature
+          signatureBy: signatureBy || "",
+          signatureDate: signatureDate ? new Date(signatureDate) : null,
           // Totals
           totalAmount,
           discountAmount,
@@ -372,17 +404,17 @@ router.post(
 
       res.status(201).json(invoice);
     } catch (error) {
-      console.error('Create invoice error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error("Create invoice error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   }
 );
 
 // Update invoice status
 router.patch(
-  '/:id/status',
+  "/:id/status",
   authenticate,
-  [body('status').isIn(['pending', 'completed', 'cancelled'])],
+  [body("status").isIn(["pending", "completed", "cancelled"])],
   async (req: AuthRequest, res: any) => {
     try {
       const errors = validationResult(req);
@@ -393,7 +425,7 @@ router.patch(
       const where: any = { id: req.params.id };
 
       // Employees can only update their own invoices
-      if (req.user?.role === 'EMPLOYEE') {
+      if (req.user?.role === "EMPLOYEE") {
         where.userId = req.user.id;
       }
 
@@ -418,20 +450,20 @@ router.patch(
 
       res.json(invoice);
     } catch (error) {
-      console.error('Update invoice error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error("Update invoice error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   }
 );
 
 // Generate PDF
-router.get('/:id/pdf', async (req: AuthRequest, res: any) => {
+router.get("/:id/pdf", async (req: AuthRequest, res: any) => {
   let browser;
   try {
     const where: any = { id: req.params.id };
 
     // Employees can only see their own invoices
-    if (req.user?.role === 'EMPLOYEE') {
+    if (req.user?.role === "EMPLOYEE") {
       where.userId = req.user.id;
     }
 
@@ -462,54 +494,62 @@ router.get('/:id/pdf', async (req: AuthRequest, res: any) => {
     });
 
     if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found' });
+      return res.status(404).json({ error: "Invoice not found" });
     }
 
     // Generate HTML
     const logoBase64 = getLogoBase64();
     const html = generateInvoiceHTML(invoice, LETTERHEAD, logoBase64);
-    
+
     // Convert HTML to PDF using puppeteer
     const launchOptions: any = {
       headless: true,
       args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage', // This solves most of the memory issues
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage", // This solves most of the memory issues
       ],
     };
 
     browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
     // Use domcontentloaded instead of networkidle0 for faster rendering
-    await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    const pdf = await page.pdf({ format: 'A4' });
+    await page.setContent(html, {
+      waitUntil: "domcontentloaded",
+      timeout: 60000,
+    });
+    const pdf = await page.pdf({ format: "A4" });
 
     // Set response headers for PDF download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="invoice-${invoice.invoiceNumber}.pdf"`);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="invoice-${invoice.invoiceNumber}.pdf"`
+    );
     res.send(pdf);
   } catch (error) {
-    console.error('Generate PDF error:', error);
-    res.status(500).json({ error: 'Failed to generate PDF. Please try again later.' });
+    console.error("Generate PDF error:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to generate PDF. Please try again later." });
   } finally {
     if (browser) {
       try {
         await browser.close();
       } catch (closeError) {
-        console.error('Error closing browser:', closeError);
+        console.error("Error closing browser:", closeError);
       }
     }
   }
 });
 
 // Delete invoice
-router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
+router.delete("/:id", authenticate, async (req: AuthRequest, res) => {
   try {
     const where: any = { id: req.params.id };
 
     // Employees can only delete their own invoices
-    if (req.user?.role === 'EMPLOYEE') {
+    if (req.user?.role === "EMPLOYEE") {
       where.userId = req.user.id;
     }
 
@@ -527,7 +567,7 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
     });
 
     if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found' });
+      return res.status(404).json({ error: "Invoice not found" });
     }
 
     // Delete the invoice
@@ -547,66 +587,142 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
       });
     }
 
-    res.json({ message: 'Invoice deleted successfully' });
+    res.json({ message: "Invoice deleted successfully" });
   } catch (error) {
-    console.error('Delete invoice error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Delete invoice error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // HTML template generator
-function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string = '') {
+function generateInvoiceHTML(
+  invoice: any,
+  letterhead: any,
+  logoBase64: string = ""
+) {
   const formatDate = (date: any) => {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
+    if (!date) return "";
+    return new Date(date).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     });
   };
 
   // Convert total amount to words
   function amountToWords(num: number): string {
-    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
-    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const ones = [
+      "",
+      "One",
+      "Two",
+      "Three",
+      "Four",
+      "Five",
+      "Six",
+      "Seven",
+      "Eight",
+      "Nine",
+    ];
+    const tens = [
+      "",
+      "",
+      "Twenty",
+      "Thirty",
+      "Forty",
+      "Fifty",
+      "Sixty",
+      "Seventy",
+      "Eighty",
+      "Ninety",
+    ];
+    const teens = [
+      "Ten",
+      "Eleven",
+      "Twelve",
+      "Thirteen",
+      "Fourteen",
+      "Fifteen",
+      "Sixteen",
+      "Seventeen",
+      "Eighteen",
+      "Nineteen",
+    ];
 
     const rupees = Math.floor(num);
     const paise = Math.round((num - rupees) * 100);
 
     function convertToWords(n: number): string {
-      if (n === 0) return '';
+      if (n === 0) return "";
       if (n < 10) return ones[n];
       if (n < 20) return teens[n - 10];
-      if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
-      if (n < 1000) return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' ' + convertToWords(n % 100) : '');
-      if (n < 100000) return convertToWords(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 !== 0 ? ' ' + convertToWords(n % 1000) : '');
-      if (n < 10000000) return convertToWords(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 !== 0 ? ' ' + convertToWords(n % 100000) : '');
-      return convertToWords(Math.floor(n / 10000000)) + ' Crore' + (n % 10000000 !== 0 ? ' ' + convertToWords(n % 10000000) : '');
+      if (n < 100)
+        return (
+          tens[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + ones[n % 10] : "")
+        );
+      if (n < 1000)
+        return (
+          ones[Math.floor(n / 100)] +
+          " Hundred" +
+          (n % 100 !== 0 ? " " + convertToWords(n % 100) : "")
+        );
+      if (n < 100000)
+        return (
+          convertToWords(Math.floor(n / 1000)) +
+          " Thousand" +
+          (n % 1000 !== 0 ? " " + convertToWords(n % 1000) : "")
+        );
+      if (n < 10000000)
+        return (
+          convertToWords(Math.floor(n / 100000)) +
+          " Lakh" +
+          (n % 100000 !== 0 ? " " + convertToWords(n % 100000) : "")
+        );
+      return (
+        convertToWords(Math.floor(n / 10000000)) +
+        " Crore" +
+        (n % 10000000 !== 0 ? " " + convertToWords(n % 10000000) : "")
+      );
     }
 
-    const rupeesInWords = convertToWords(rupees) || 'Zero';
-    const paiseInWords = paise > 0 ? ' and ' + convertToWords(paise) + ' Paise' : '';
-    return rupeesInWords + ' Rupees' + paiseInWords;
+    const rupeesInWords = convertToWords(rupees) || "Zero";
+    const paiseInWords =
+      paise > 0 ? " and " + convertToWords(paise) + " Paise" : "";
+    return rupeesInWords + " Rupees" + paiseInWords;
   }
 
   const itemRows = invoice.items
     .map(
       (item: any, index: number) => `
     <tr>
-      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${index + 1}</td>
-      <td style="border: 1px solid #333; padding: 8px;">${item.description || item.product.name}</td>
-      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.hsnCode || '-'}</td>
-      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.quantity}</td>
-      <td style="border: 1px solid #333; padding: 8px; text-align: center;">₹${item.price.toFixed(2)}</td>
-      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.per || item.product.unit}</td>
-      <td style="border: 1px solid #333; padding: 8px; text-align: right;">₹${item.subtotal.toFixed(2)}</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${
+        index + 1
+      }</td>
+      <td style="border: 1px solid #333; padding: 8px;">${
+        item.description || item.product.name
+      }</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${
+        item.hsnCode || "-"
+      }</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${
+        item.quantity
+      }</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: center;">₹${item.price.toFixed(
+        2
+      )}</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: center;">${
+        item.per || item.product.unit
+      }</td>
+      <td style="border: 1px solid #333; padding: 8px; text-align: right;">₹${item.subtotal.toFixed(
+        2
+      )}</td>
     </tr>
   `
     )
-    .join('');
+    .join("");
 
-  const logoHtml = logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="width: 100px; height: auto; margin-bottom: 15px;">` : '';
+  const logoHtml = logoBase64
+    ? `<img src="${logoBase64}" alt="Logo" style="width: 100px; height: auto; margin-bottom: 15px;">`
+    : "";
 
   return `
     <!DOCTYPE html>
@@ -694,13 +810,17 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
       <div class="page">
         <!-- Letterhead -->
         <div class="letterhead">
-        ${logoHtml ? `<div class="logo">${logoHtml}</div>` : ''}
+        ${logoHtml ? `<div class="logo">${logoHtml}</div>` : ""}
         <div class="company-info">
         <div class="company-name">${letterhead.companyName}</div>
         <div class="company-tagline">${letterhead.tagline}</div>
         <div class="company-address">${letterhead.address}</div>
-        <div class="company-contact">Contact: ${letterhead.contact} | Email: ${letterhead.email}</div>
-        <div style="font-size: 10px; margin-top: 3px;">GSTIN: ${letterhead.gstin}</div>
+        <div class="company-contact">Contact: ${letterhead.contact} | Email: ${
+    letterhead.email
+  }</div>
+        <div style="font-size: 10px; margin-top: 3px;">GSTIN: ${
+          letterhead.gstin
+        }</div>
         </div>
           <div class="letterhead-spacer"></div>
          </div>
@@ -719,34 +839,52 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
                  <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px;">Tax Invoice Details</div>
                  <div style="display: flex; margin-bottom: 4px; gap: 15px;">
                    <div style="flex: 1;">
-                     <div><span style="font-weight: bold;">Tax Inv No.</span> <span style="font-weight: bold;">:</span> <span>${invoice.taxInvNo || '-'}</span></div>
+                     <div><span style="font-weight: bold;">Tax Inv No.</span> <span style="font-weight: bold;">:</span> <span>${
+                       invoice.taxInvNo || "-"
+                     }</span></div>
                    </div>
                    <div style="flex: 1;">
-                     <div><span style="font-weight: bold;">Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(invoice.taxInvDate)}</span></div>
+                     <div><span style="font-weight: bold;">Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(
+                       invoice.taxInvDate
+                     )}</span></div>
                    </div>
                  </div>
                  <div style="display: flex; margin-bottom: 4px; gap: 15px;">
                    <div style="flex: 1;">
-                     <div><span style="font-weight: bold;">Chalan No.</span> <span style="font-weight: bold;">:</span> <span>${invoice.chalanNo || '-'}</span></div>
+                     <div><span style="font-weight: bold;">Chalan No.</span> <span style="font-weight: bold;">:</span> <span>${
+                       invoice.chalanNo || "-"
+                     }</span></div>
                    </div>
                    <div style="flex: 1;">
-                     <div><span style="font-weight: bold;">Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(invoice.chalanDate)}</span></div>
+                     <div><span style="font-weight: bold;">Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(
+                       invoice.chalanDate
+                     )}</span></div>
                    </div>
                  </div>
                  <div style="margin-bottom: 4px;">
-                   <div><span style="font-weight: bold;">Order No.</span> <span style="font-weight: bold;">:</span> <span>${invoice.orderNo || '-'}</span></div>
-                   <div><span style="font-weight: bold;">Order Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(invoice.orderDate)}</span></div>
+                   <div><span style="font-weight: bold;">Order No.</span> <span style="font-weight: bold;">:</span> <span>${
+                     invoice.orderNo || "-"
+                   }</span></div>
+                   <div><span style="font-weight: bold;">Order Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(
+                     invoice.orderDate
+                   )}</span></div>
                  </div>
                  <div style="display: flex; margin-bottom: 4px; gap: 15px;">
                    <div style="flex: 1;">
-                     <div><span style="font-weight: bold;">Payment Term</span> <span style="font-weight: bold;">:</span> <span>${invoice.paymentTerm || '-'}</span></div>
+                     <div><span style="font-weight: bold;">Payment Term</span> <span style="font-weight: bold;">:</span> <span>${
+                       invoice.paymentTerm || "-"
+                     }</span></div>
                    </div>
                    <div style="flex: 1;">
-                     <div><span style="font-weight: bold;">Due On</span> <span style="font-weight: bold;">:</span> <span>${formatDate(invoice.dueOn)}</span></div>
+                     <div><span style="font-weight: bold;">Due On</span> <span style="font-weight: bold;">:</span> <span>${formatDate(
+                       invoice.dueOn
+                     )}</span></div>
                    </div>
                  </div>
                  <div style="margin-bottom: 4px;">
-                   <span style="font-weight: bold;">Broker Name</span> <span style="font-weight: bold;">:</span> <span>${invoice.brokerName || '-'}</span>
+                   <span style="font-weight: bold;">Broker Name</span> <span style="font-weight: bold;">:</span> <span>${
+                     invoice.brokerName || "-"
+                   }</span>
                  </div>
                </div>
              </div>
@@ -756,18 +894,34 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
                <!-- Transporter Details -->
                <div style="font-size: 10px;">
                  <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px;">Transporter Details</div>
-                 <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Transporter</span> <span style="font-weight: bold;">:</span> <span>${invoice.transporterName || '-'}</span></div>
+                 <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Transporter</span> <span style="font-weight: bold;">:</span> <span>${
+                   invoice.transporterName || "-"
+                 }</span></div>
                  <div style="display: flex; margin-bottom: 4px; gap: 15px;">
-                   <div style="flex: 1;"><span style="font-weight: bold;">L.R.No.</span> <span style="font-weight: bold;">:</span> <span>${invoice.lrNo || '-'}</span></div>
-                   <div style="flex: 1;"><span style="font-weight: bold;">Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(invoice.lrDate)}</span></div>
+                   <div style="flex: 1;"><span style="font-weight: bold;">L.R.No.</span> <span style="font-weight: bold;">:</span> <span>${
+                     invoice.lrNo || "-"
+                   }</span></div>
+                   <div style="flex: 1;"><span style="font-weight: bold;">Date</span> <span style="font-weight: bold;">:</span> <span>${formatDate(
+                     invoice.lrDate
+                   )}</span></div>
                  </div>
-                 <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Vehicle No.</span> <span style="font-weight: bold;">:</span> <span>${invoice.vehicleNo || '-'}</span></div>
-                 <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Place of Supply</span> <span style="font-weight: bold;">:</span> <span>${invoice.placeOfSupply || '-'}</span></div>
+                 <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Vehicle No.</span> <span style="font-weight: bold;">:</span> <span>${
+                   invoice.vehicleNo || "-"
+                 }</span></div>
+                 <div style="margin-bottom: 4px;"><span style="font-weight: bold;">Place of Supply</span> <span style="font-weight: bold;">:</span> <span>${
+                   invoice.placeOfSupply || "-"
+                 }</span></div>
                  <div style="display: flex; margin-bottom: 4px; gap: 15px;">
-                   <div style="flex: 1;"><span style="font-weight: bold;">From</span> <span style="font-weight: bold;">:</span> <span>${invoice.from || '-'}</span></div>
-                   <div style="flex: 1;"><span style="font-weight: bold;">To</span> <span style="font-weight: bold;">:</span> <span>${invoice.to || '-'}</span></div>
+                   <div style="flex: 1;"><span style="font-weight: bold;">From</span> <span style="font-weight: bold;">:</span> <span>${
+                     invoice.from || "-"
+                   }</span></div>
+                   <div style="flex: 1;"><span style="font-weight: bold;">To</span> <span style="font-weight: bold;">:</span> <span>${
+                     invoice.to || "-"
+                   }</span></div>
                  </div>
-                 <div><span style="font-weight: bold;">No.oF Boxes</span> <span style="font-weight: bold;">:</span> <span>${invoice.noOfBoxes || '-'}</span></div>
+                 <div><span style="font-weight: bold;">No.oF Boxes</span> <span style="font-weight: bold;">:</span> <span>${
+                   invoice.noOfBoxes || "-"
+                 }</span></div>
                </div>
              </div>
            </div>
@@ -778,7 +932,9 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
              <div style="flex: 1; padding: 10px; border-right: 1px solid #333;">
                <!-- IRN -->
                <div style="font-size: 10px;">
-                 <div><span style="font-weight: bold;">IRN :</span> <span>${invoice.irn || '-'}</span></div>
+                 <div><span style="font-weight: bold;">IRN :</span> <span>${
+                   invoice.irn || "-"
+                 }</span></div>
                </div>
              </div>
 
@@ -786,7 +942,9 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
              <div style="flex: 1; padding: 10px;">
                <!-- ACK No -->
                <div style="font-size: 10px;">
-                 <div><span style="font-weight: bold;">ACK No. :</span> <span>${invoice.ackNo || '-'}</span></div>
+                 <div><span style="font-weight: bold;">ACK No. :</span> <span>${
+                   invoice.ackNo || "-"
+                 }</span></div>
                </div>
              </div>
            </div>
@@ -798,12 +956,24 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
                <!-- Billed To -->
                <div style="font-size: 10px;">
                  <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px;">Billed To</div>
-                 <div style="margin-bottom: 4px;"><span>${invoice.billedToName || '-'}</span></div>
-                 ${invoice.billedToAddress ? `<div style="margin-bottom: 4px; white-space: pre-wrap;">${invoice.billedToAddress}</div>` : ''}
-                 <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State</span> <span style="font-weight: bold;">:</span> <span>${invoice.billedToState || '-'}</span></div>
+                 <div style="margin-bottom: 4px;"><span>${
+                   invoice.billedToName || "-"
+                 }</span></div>
+                 ${
+                   invoice.billedToAddress
+                     ? `<div style="margin-bottom: 4px; white-space: pre-wrap;">${invoice.billedToAddress}</div>`
+                     : ""
+                 }
+                 <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State</span> <span style="font-weight: bold;">:</span> <span>${
+                   invoice.billedToState || "-"
+                 }</span></div>
                  <div style="display: flex; gap: 15px;">
-                   <div style="flex: 1;"><span style="font-weight: bold;">GSTIN</span> <span style="font-weight: bold;">:</span> <span>${invoice.billedToGSTIN || '-'}</span></div>
-                   <div style="flex: 1;"><span style="font-weight: bold;">P.A.No.:</span> <span>${invoice.billedToPANo || '-'}</span></div>
+                   <div style="flex: 1;"><span style="font-weight: bold;">GSTIN</span> <span style="font-weight: bold;">:</span> <span>${
+                     invoice.billedToGSTIN || "-"
+                   }</span></div>
+                   <div style="flex: 1;"><span style="font-weight: bold;">P.A.No.:</span> <span>${
+                     invoice.billedToPANo || "-"
+                   }</span></div>
                  </div>
                </div>
              </div>
@@ -813,12 +983,24 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
                <!-- Shipped To -->
                <div style="font-size: 10px;">
                  <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px;">Shipped To</div>
-                 <div style="margin-bottom: 4px;"><span>${invoice.shippedToName || '-'}</span></div>
-                 ${invoice.shippedToAddress ? `<div style="margin-bottom: 4px; white-space: pre-wrap;">${invoice.shippedToAddress}</div>` : ''}
-                 <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State</span> <span style="font-weight: bold;">:</span> <span>${invoice.shippedToState || '-'}</span></div>
+                 <div style="margin-bottom: 4px;"><span>${
+                   invoice.shippedToName || "-"
+                 }</span></div>
+                 ${
+                   invoice.shippedToAddress
+                     ? `<div style="margin-bottom: 4px; white-space: pre-wrap;">${invoice.shippedToAddress}</div>`
+                     : ""
+                 }
+                 <div style="margin-bottom: 4px;"><span style="font-weight: bold;">State</span> <span style="font-weight: bold;">:</span> <span>${
+                   invoice.shippedToState || "-"
+                 }</span></div>
                  <div style="display: flex; gap: 15px;">
-                   <div style="flex: 1;"><span style="font-weight: bold;">GSTIN</span> <span style="font-weight: bold;">:</span> <span>${invoice.shippedToGSTIN || '-'}</span></div>
-                   <div style="flex: 1;"><span style="font-weight: bold;">P.A.No.:</span> <span>${invoice.shippedToPANo || '-'}</span></div>
+                   <div style="flex: 1;"><span style="font-weight: bold;">GSTIN</span> <span style="font-weight: bold;">:</span> <span>${
+                     invoice.shippedToGSTIN || "-"
+                   }</span></div>
+                   <div style="flex: 1;"><span style="font-weight: bold;">P.A.No.:</span> <span>${
+                     invoice.shippedToPANo || "-"
+                   }</span></div>
                  </div>
                </div>
              </div>
@@ -855,44 +1037,77 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
               </div>
               ${
                 invoice.discountAmount > 0
-                  ? `<div class="summary-row"><span>Discount (${invoice.discountRate}%):</span><span>-₹${invoice.discountAmount.toFixed(2)}</span></div>
+                  ? `<div class="summary-row"><span>Discount (${
+                      invoice.discountRate
+                    }%):</span><span>-₹${invoice.discountAmount.toFixed(
+                      2
+                    )}</span></div>
                      <div class="summary-row">
                        <span>Subtotal After Discount:</span>
-                       <span>₹${(invoice.totalAmount - invoice.discountAmount).toFixed(2)}</span>
+                       <span>₹${(
+                         invoice.totalAmount - invoice.discountAmount
+                       ).toFixed(2)}</span>
                      </div>`
-                  : ''
+                  : ""
               }
               ${
                 invoice.transportCharges > 0
-                  ? `<div class="summary-row"><span>Transport Charges:</span><span>₹${invoice.transportCharges.toFixed(2)}</span></div>
+                  ? `<div class="summary-row"><span>Transport Charges:</span><span>₹${invoice.transportCharges.toFixed(
+                      2
+                    )}</span></div>
                      <div class="summary-row">
                        <span>Subtotal After Transport:</span>
-                       <span>₹${(invoice.totalAmount - invoice.discountAmount + invoice.transportCharges).toFixed(2)}</span>
+                       <span>₹${(
+                         invoice.totalAmount -
+                         invoice.discountAmount +
+                         invoice.transportCharges
+                       ).toFixed(2)}</span>
                      </div>`
-                  : ''
+                  : ""
               }
               ${
                 invoice.sgstAmount > 0
-                  ? `<div class="summary-row"><span>SGST (${invoice.sgstRate}%):</span><span>₹${invoice.sgstAmount.toFixed(2)}</span></div>`
-                  : ''
+                  ? `<div class="summary-row"><span>SGST (${
+                      invoice.sgstRate
+                    }%):</span><span>₹${invoice.sgstAmount.toFixed(
+                      2
+                    )}</span></div>`
+                  : ""
               }
               ${
                 invoice.cgstAmount > 0
-                  ? `<div class="summary-row"><span>CGST (${invoice.cgstRate}%):</span><span>₹${invoice.cgstAmount.toFixed(2)}</span></div>`
-                  : ''
+                  ? `<div class="summary-row"><span>CGST (${
+                      invoice.cgstRate
+                    }%):</span><span>₹${invoice.cgstAmount.toFixed(
+                      2
+                    )}</span></div>`
+                  : ""
               }
               ${
                 invoice.igstAmount > 0
-                  ? `<div class="summary-row"><span>IGST (${invoice.igstRate}%):</span><span>₹${invoice.igstAmount.toFixed(2)}</span></div>`
-                  : ''
+                  ? `<div class="summary-row"><span>IGST (${
+                      invoice.igstRate
+                    }%):</span><span>₹${invoice.igstAmount.toFixed(
+                      2
+                    )}</span></div>`
+                  : ""
               }
               ${
-                (invoice.sgstAmount > 0 || invoice.cgstAmount > 0 || invoice.igstAmount > 0)
+                invoice.sgstAmount > 0 ||
+                invoice.cgstAmount > 0 ||
+                invoice.igstAmount > 0
                   ? `<div class="summary-row">
                       <span>Subtotal After Taxes:</span>
-                      <span>₹${(invoice.totalAmount - invoice.discountAmount + invoice.transportCharges + invoice.sgstAmount + invoice.cgstAmount + invoice.igstAmount).toFixed(2)}</span>
+                      <span>₹${(
+                        invoice.totalAmount -
+                        invoice.discountAmount +
+                        invoice.transportCharges +
+                        invoice.sgstAmount +
+                        invoice.cgstAmount +
+                        invoice.igstAmount
+                      ).toFixed(2)}</span>
                     </div>`
-                  : ''
+                  : ""
               }
               <div class="summary-row" style="color: #0066cc; font-weight: bold;">
                 <span>Adjusted Total:</span>
@@ -913,45 +1128,120 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
 
         <!-- Bank Details -->
         ${
-        invoice.bankDetails || invoice.branch || invoice.rtgsNeftIfscCode
-        ? `<div style="border-top: 1px solid #333; border-bottom: 1px solid #333; padding: 10px; margin-bottom: 10px;">
+          invoice.bankDetails || invoice.branch || invoice.rtgsNeftIfscCode
+            ? `<div style="border-top: 1px solid #333; border-bottom: 1px solid #333; padding: 10px; margin-bottom: 10px;">
         <div style="font-weight: bold; margin-bottom: 6px; font-size: 10px;">Bank Details</div>
         <div style="display: flex; gap: 20px;">
           <div style="flex: 1;">
-            ${invoice.bankDetails ? `<div style="font-size: 9px; white-space: pre-wrap; font-weight: bold;">${invoice.bankDetails}</div>` : ''}
+            ${
+              invoice.bankDetails
+                ? `<div style="font-size: 9px; white-space: pre-wrap; font-weight: bold;">${invoice.bankDetails}</div>`
+                : ""
+            }
         </div>
         <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-        <div><span style="font-weight: bold;">Branch:</span> <span>${invoice.branch || '-'}</span></div>
-        <div><span style="font-weight: bold;">RTGS/NEFT/IFSC Code:</span> <span>${invoice.rtgsNeftIfscCode || '-'}</span></div>
+        <div><span style="font-weight: bold;">Branch:</span> <span>${
+          invoice.branch || "-"
+        }</span></div>
+        <div><span style="font-weight: bold;">RTGS/NEFT/IFSC Code:</span> <span>${
+          invoice.rtgsNeftIfscCode || "-"
+        }</span></div>
           </div>
             </div>
            </div>`
-            : ''
+            : ""
         }
 
-        <!-- Terms & Conditions and Signature Section -->
-        <div style="display: flex; gap: 20px; margin-bottom: 10px;">
-           <!-- Terms & Conditions -->
-          <div style="flex: 1; border-top: 1px solid #333; border-bottom: 1px solid #333; padding: 8px; font-size: 9px;">
-            <strong style="font-size: 10px;">Terms & Conditions:</strong><br/>
-          ${
-            invoice.termsAndConditions
-            ? invoice.termsAndConditions
-                  .split('\n')
+        <!-- Footer Section with GSTIN, P.A.No., Terms & Conditions and Signature -->
+        <div style="border-top: 1px solid #333; padding-top: 10px; margin-top: 10px;">
+          <!-- GSTIN and P.A.No Row -->
+          <div style="display: flex; gap: 20px; margin-bottom: 10px; font-size: 10px;">
+            <div style="flex: 1;">
+              <span style="font-weight: bold;">GSTIN:</span> <span>${letterhead.gstin || "-"}</span>
+            </div>
+            <div style="flex: 1; text-align: right;">
+              <span style="font-weight: bold;"></span> <span></span>
+            </div>
+          </div>
+
+          <!-- Terms & Conditions and Signature Section -->
+          <div style="display: flex; gap: 20px; margin-bottom: 0;">
+            <!-- Terms & Conditions -->
+            <div style="flex: 1; border: 1px solid #333; padding: 8px; font-size: 9px;">
+              <strong style="font-size: 10px;">Terms & Conditions:</strong><br/>
+            ${
+              invoice.termsAndConditions
+                ? invoice.termsAndConditions
+                    .split("\n")
                     .filter((line: string) => line.trim())
-                     .map((line: string) => `<div style="margin-bottom: 4px;">• ${line.trim()}</div>`)
-                     .join('')
-                 : '<div>• N/A</div>'
-             }
-           </div>
-           
-           <!-- Signature Section -->
-           <div style="width: 200px; text-align: center;">
-             <div style="border-top: 1px solid #333; margin-top: 30px; padding-top: 5px; font-size: 10px;">
-               Authorized Signatory
-             </div>
-           </div>
-         </div>
+                    .map(
+                      (line: string) =>
+                        `<div style="margin-bottom: 4px;">• ${line.trim()}</div>`
+                    )
+                    .join("")
+                : "<div>• N/A</div>"
+            }
+            </div>
+            
+            <!-- Signature Section -->
+            <div style="width: 280px; border: 1px solid #333; padding: 8px;">
+              <!-- Certified Statement -->
+              <div style="font-size: 8px; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 6px;">
+                Certified that the particulars given above are true and correct
+              </div>
+
+              <!-- Company Name at Top Right -->
+              <div style="text-align: right; margin-bottom: 12px; margin-top: 6px;">
+                <div style="font-size: 8px; font-weight: bold;">
+                  For ${letterhead.companyName}
+                </div>
+              </div>
+
+              <!-- Signature Area with Bottom Row -->
+              <div style="display: flex; flex-direction: column; margin-top: 8px;">
+                <!-- Top: Digital Signature and Signature Line -->
+                <div style="display: flex; gap: 12px; flex: 1;">
+                  <!-- Left: Digital Signature Info -->
+                  <div style="flex: 1; font-size: 6px; line-height: 1.3; margin-left: 62px;">
+                    <div style="margin-bottom: 1px;">
+                      <span>Digitally signed by:</span>
+                      <span>${invoice.signatureBy || "M/S Enterprise"}</span>
+                    </div>
+                    <div style="margin-bottom: 1px;">
+                      <span>Reason:</span>
+                      <span>I am approving this document</span>
+                    </div>
+                    <div style="margin-bottom: 1px;">
+                      <span>Date:</span>
+                      <span>${new Date(invoice.createdAt).toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <!-- Right: Signature Space with Line -->
+                  <div style="flex: 1; text-align: right;">
+                    <div style="margin-top: 6px;">
+                      ${
+                        invoice.signatureBy
+                          ? `<div style="font-weight: bold; font-size: 8px;"></div>`
+                          : ""
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bottom Row: E. & O. E. on left, Authorised Signatory on right -->
+                <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 6px; border-top: 1px solid #ddd;">
+                  <div style="font-size: 8px;">
+                    E. &amp; O. E.
+                  </div>
+                  <div style="font-size: 8px; font-weight: bold;">
+                    Authorised Signatory
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </body>
     </html>
@@ -959,4 +1249,3 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
 }
 
 export default router;
-
