@@ -32,6 +32,7 @@ import {
 import { Plus, Edit, Trash2, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '../../lib/utils'
+import { PasswordInput } from '../../components/ui/password-input'
 
 export default function Employees() {
   const [isOpen, setIsOpen] = useState(false)
@@ -157,10 +158,9 @@ export default function Employees() {
                   <Label htmlFor="password">
                     {editingUser ? 'New Password (leave blank to keep current)' : 'Password'}
                   </Label>
-                  <Input
+                  <PasswordInput
                     id="password"
                     name="password"
-                    type="password"
                     required={!editingUser}
                     minLength={6}
                   />

@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore'
 import api from '../lib/api'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
+import { PasswordInput } from '../components/ui/password-input'
 import { Card, CardContent } from '../components/ui/card'
 import { toast } from 'sonner'
 import { Package, Mail, Lock, ArrowRight } from 'lucide-react'
@@ -98,9 +99,8 @@ export default function Login() {
                   <span className="text-sm font-semibold text-gray-800">Password</span>
                 </label>
                 <div className="relative">
-                  <Input
+                  <PasswordInput
                     id="password"
-                    type="password"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
