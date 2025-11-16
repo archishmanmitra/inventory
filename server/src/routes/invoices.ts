@@ -462,8 +462,8 @@ router.get('/:id/pdf', async (req: AuthRequest, res: any) => {
 
     browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
-    // Set longer timeout for complex invoice HTML
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
+    // Use domcontentloaded instead of networkidle0 for faster rendering
+    await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
     const pdf = await page.pdf({ format: 'A4' });
 
     // Set response headers for PDF download
