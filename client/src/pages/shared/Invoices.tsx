@@ -85,8 +85,22 @@ export default function Invoices() {
 
 
 
-  const downloadInvoicePDF = (invoiceId: string) => {
-    window.open(`/api/invoices/${invoiceId}/pdf`, '_blank')
+  const downloadInvoicePDF = async (invoiceId: string, invoiceNumber: string) => {
+    try {
+      const response = await api.get(`/invoices/${invoiceId}/pdf`, { responseType: 'blob' })
+      const blob = new Blob([response.data], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `invoice-${invoiceNumber}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      toast.success('Invoice downloaded successfully')
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to download invoice')
+    }
   }
 
   const getProductPrice = (productId: string) => {
@@ -193,7 +207,7 @@ export default function Invoices() {
                         <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => downloadInvoicePDF(invoice.id)}
+                        onClick={() => downloadInvoicePDF(invoice.id, invoice.invoiceNumber)}
                         title="Download PDF"
                         >
                         <Download className="h-4 w-4" />
@@ -267,7 +281,7 @@ export default function Invoices() {
                         <Button
                             variant="ghost"
                               size="sm"
-                                onClick={() => downloadInvoicePDF(invoice.id)}
+                                onClick={() => downloadInvoicePDF(invoice.id, invoice.invoiceNumber)}
                                   title="Download PDF"
                                   >
                                       <Download className="h-4 w-4" />
@@ -342,7 +356,7 @@ export default function Invoices() {
                     <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => downloadInvoicePDF(invoice.id)}
+                    onClick={() => downloadInvoicePDF(invoice.id, invoice.invoiceNumber)}
                     title="Download PDF"
                     >
                     <Download className="h-4 w-4" />
