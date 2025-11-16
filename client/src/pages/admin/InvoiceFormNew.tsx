@@ -78,6 +78,8 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
     // Tax settings
     discountEnabled: false,
     discountRate: 0,
+    transportChargesEnabled: false,
+    transportCharges: 0,
     igstEnabled: false,
     igstRate: 18,
     sgstEnabled: false,
@@ -137,7 +139,7 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
     setLoading(true);
     try {
       const totals = calculateTotals();
-      const adjustedTotal = Math.round(Math.abs(totals.total));
+      const adjustedTotal = Math.floor(Math.abs(totals.total));
       const response = await api.post('/invoices', { ...formData, items, adjustedTotal });
       setCreatedInvoiceId(response.data.id);
       toast.success('Invoice created successfully');
@@ -174,6 +176,8 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
         shippedToPANo: '',
         discountEnabled: false,
         discountRate: 0,
+        transportChargesEnabled: false,
+        transportCharges: 0,
         igstEnabled: false,
         igstRate: 18,
         sgstEnabled: false,
@@ -218,18 +222,26 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
     const discountAmount = formData.discountEnabled ? (subtotal * formData.discountRate) / 100 : 0;
     const subtotalAfterDiscount = subtotal - discountAmount;
 
-    const sgstAmount = formData.sgstEnabled ? (subtotalAfterDiscount * formData.sgstRate) / 100 : 0;
-    const cgstAmount = formData.cgstEnabled ? (subtotalAfterDiscount * formData.cgstRate) / 100 : 0;
-    const igstAmount = formData.igstEnabled ? (subtotalAfterDiscount * formData.igstRate) / 100 : 0;
+    const transportCharges = formData.transportChargesEnabled ? (parseFloat(String(formData.transportCharges)) || 0) : 0;
+
+    const sgstAmount = formData.sgstEnabled ? ((subtotalAfterDiscount + transportCharges) * formData.sgstRate) / 100 : 0;
+    const cgstAmount = formData.cgstEnabled ? ((subtotalAfterDiscount + transportCharges) * formData.cgstRate) / 100 : 0;
+    const igstAmount = formData.igstEnabled ? ((subtotalAfterDiscount + transportCharges) * formData.igstRate) / 100 : 0;
+
+    const subtotalAfterTransport = subtotalAfterDiscount + transportCharges;
+    const subtotalAfterTaxes = subtotalAfterTransport + sgstAmount + cgstAmount + igstAmount;
 
     return {
       subtotal,
       discountAmount,
       subtotalAfterDiscount,
+      transportCharges,
+      subtotalAfterTransport,
       sgstAmount,
       cgstAmount,
       igstAmount,
-      total: subtotalAfterDiscount + sgstAmount + cgstAmount + igstAmount,
+      subtotalAfterTaxes,
+      total: subtotalAfterTaxes,
     };
   };
 
@@ -677,32 +689,58 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
             </div>
 
             {/* TAX & DISCOUNT SECTION */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Discount */}
-              <div className="border rounded p-3 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="discountEnabled"
-                    name="discountEnabled"
-                    checked={formData.discountEnabled}
-                    onChange={handleInputChange}
-                  />
-                  <Label htmlFor="discountEnabled" className="font-semibold text-sm cursor-pointer">Discount</Label>
-                </div>
-                {formData.discountEnabled && (
-                  <div>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      name="discountRate"
-                      value={formData.discountRate}
-                      onChange={handleInputChange}
-                      className="text-sm h-8"
-                      placeholder="0"
-                    />
-                  </div>
-                )}
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+               {/* Discount */}
+               <div className="border rounded p-3 space-y-2">
+                 <div className="flex items-center gap-2">
+                   <Checkbox
+                     id="discountEnabled"
+                     name="discountEnabled"
+                     checked={formData.discountEnabled}
+                     onChange={handleInputChange}
+                   />
+                   <Label htmlFor="discountEnabled" className="font-semibold text-sm cursor-pointer">Discount</Label>
+                 </div>
+                 {formData.discountEnabled && (
+                   <div>
+                     <Input
+                       type="number"
+                       step="0.01"
+                       name="discountRate"
+                       value={formData.discountRate}
+                       onChange={handleInputChange}
+                       className="text-sm h-8"
+                       placeholder="0"
+                     />
+                   </div>
+                 )}
+               </div>
+
+               {/* Transport Charges */}
+               <div className="border rounded p-3 space-y-2">
+                 <div className="flex items-center gap-2">
+                   <Checkbox
+                     id="transportChargesEnabled"
+                     name="transportChargesEnabled"
+                     checked={formData.transportChargesEnabled}
+                     onChange={handleInputChange}
+                   />
+                   <Label htmlFor="transportChargesEnabled" className="font-semibold text-sm cursor-pointer">Transport</Label>
+                 </div>
+                 {formData.transportChargesEnabled && (
+                   <div>
+                     <Input
+                       type="number"
+                       step="0.01"
+                       name="transportCharges"
+                       value={formData.transportCharges}
+                       onChange={handleInputChange}
+                       className="text-sm h-8"
+                       placeholder="0"
+                     />
+                   </div>
+                 )}
+               </div>
 
               {/* IGST */}
               <div className="border rounded p-3 space-y-2">
@@ -798,8 +836,20 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
                         <span className="font-semibold">-₹{totals.discountAmount.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between font-semibold border-t pt-2">
-                        <span>After Discount:</span>
+                        <span>Subtotal After Discount:</span>
                         <span>₹{totals.subtotalAfterDiscount.toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
+                  {totals.transportCharges > 0 && (
+                    <>
+                      <div className="flex justify-between text-green-600">
+                        <span>Transport Charges:</span>
+                        <span className="font-semibold">₹{totals.transportCharges.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between font-semibold border-t pt-2">
+                        <span>Subtotal After Transport:</span>
+                        <span>₹{totals.subtotalAfterTransport.toFixed(2)}</span>
                       </div>
                     </>
                   )}
@@ -823,17 +873,17 @@ export default function InvoiceFormNew({ onSuccess }: { onSuccess?: () => void }
                   )}
                   {(totals.sgstAmount > 0 || totals.cgstAmount > 0 || totals.igstAmount > 0) && (
                     <div className="flex justify-between font-semibold border-t pt-2">
-                      <span>Subtotal After Tax:</span>
-                      <span>₹{totals.total.toFixed(2)}</span>
+                      <span>Subtotal After Taxes:</span>
+                      <span>₹{totals.subtotalAfterTaxes.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-blue-600">
                     <span>Adjusted Total:</span>
-                    <span className="font-semibold">₹{Math.round(Math.abs(totals.total)).toFixed(2)}</span>
+                    <span className="font-semibold">₹{Math.floor(Math.abs(totals.total)).toFixed(2)}</span>
                   </div>
                   <div className="border-t pt-2 font-bold flex justify-between text-base">
                     <span>Total Amount:</span>
-                    <span>₹{Math.round(Math.abs(totals.total)).toFixed(2)}</span>
+                    <span>₹{Math.floor(Math.abs(totals.total)).toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>

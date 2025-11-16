@@ -186,6 +186,8 @@ router.post(
         // Tax settings
         discountEnabled = false,
         discountRate = 0,
+        transportChargesEnabled = false,
+        transportCharges = 0,
         igstEnabled = false,
         igstRate = 18,
         sgstEnabled = false,
@@ -200,7 +202,14 @@ router.post(
         termsAndConditions,
         // Adjusted total from frontend
         adjustedTotal,
-      } = req.body;
+        } = req.body;
+
+      // Convert numeric strings to numbers
+      const discountRateNum = typeof discountRate === 'string' ? parseFloat(discountRate) : discountRate;
+      const transportChargesNum = typeof transportCharges === 'string' ? parseFloat(transportCharges) : transportCharges;
+      const igstRateNum = typeof igstRate === 'string' ? parseFloat(igstRate) : igstRate;
+      const sgstRateNum = typeof sgstRate === 'string' ? parseFloat(sgstRate) : sgstRate;
+      const cgstRateNum = typeof cgstRate === 'string' ? parseFloat(cgstRate) : cgstRate;
 
       // Generate invoice number
       const count = await prisma.invoice.count();
@@ -242,14 +251,18 @@ router.post(
       }
 
       // Calculate discount
-      const discountAmount = discountEnabled ? (totalAmount * discountRate) / 100 : 0;
+      const discountAmount = discountEnabled ? (totalAmount * discountRateNum) / 100 : 0;
       const subtotalAfterDiscount = totalAmount - discountAmount;
 
-      // Calculate taxes
-      const sgstAmount = sgstEnabled ? (subtotalAfterDiscount * sgstRate) / 100 : 0;
-      const cgstAmount = cgstEnabled ? (subtotalAfterDiscount * cgstRate) / 100 : 0;
-      const igstAmount = igstEnabled ? (subtotalAfterDiscount * igstRate) / 100 : 0;
-      const calculatedTotal = Math.round(Math.abs(subtotalAfterDiscount + sgstAmount + cgstAmount + igstAmount) * 100) / 100;
+      // Calculate transport charges
+      const finalTransportCharges = transportChargesEnabled ? transportChargesNum : 0;
+      const subtotalAfterTransport = subtotalAfterDiscount + finalTransportCharges;
+
+      // Calculate taxes (applied after discount and transport charges)
+      const sgstAmount = sgstEnabled ? (subtotalAfterTransport * sgstRateNum) / 100 : 0;
+      const cgstAmount = cgstEnabled ? (subtotalAfterTransport * cgstRateNum) / 100 : 0;
+      const igstAmount = igstEnabled ? (subtotalAfterTransport * igstRateNum) / 100 : 0;
+      const calculatedTotal = Math.floor(Math.abs(subtotalAfterTransport + sgstAmount + cgstAmount + igstAmount) * 100) / 100;
       const netAmount = adjustedTotal || calculatedTotal;
 
       // Create invoice with items
@@ -294,13 +307,15 @@ router.post(
           shippedToPANo: shippedToPANo || '',
           // Tax settings
           discountEnabled,
-          discountRate,
+          discountRate: discountRateNum,
           igstEnabled,
-          igstRate,
+          igstRate: igstRateNum,
           sgstEnabled,
-          sgstRate,
+          sgstRate: sgstRateNum,
           cgstEnabled,
-          cgstRate,
+          cgstRate: cgstRateNum,
+          transportEnabled: transportChargesEnabled,
+          transportCharges: finalTransportCharges,
           // Bank Details
           bankDetails: bankDetails || '',
           branch: branch || '',
@@ -310,6 +325,7 @@ router.post(
           // Totals
           totalAmount,
           discountAmount,
+          transportAmount: finalTransportCharges,
           sgstAmount,
           cgstAmount,
           igstAmount,
@@ -847,6 +863,15 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
                   : ''
               }
               ${
+                invoice.transportCharges > 0
+                  ? `<div class="summary-row"><span>Transport Charges:</span><span>₹${invoice.transportCharges.toFixed(2)}</span></div>
+                     <div class="summary-row">
+                       <span>Subtotal After Transport:</span>
+                       <span>₹${(invoice.totalAmount - invoice.discountAmount + invoice.transportCharges).toFixed(2)}</span>
+                     </div>`
+                  : ''
+              }
+              ${
                 invoice.sgstAmount > 0
                   ? `<div class="summary-row"><span>SGST (${invoice.sgstRate}%):</span><span>₹${invoice.sgstAmount.toFixed(2)}</span></div>`
                   : ''
@@ -865,7 +890,7 @@ function generateInvoiceHTML(invoice: any, letterhead: any, logoBase64: string =
                 (invoice.sgstAmount > 0 || invoice.cgstAmount > 0 || invoice.igstAmount > 0)
                   ? `<div class="summary-row">
                       <span>Subtotal After Taxes:</span>
-                      <span>₹${(invoice.totalAmount + (invoice.discountAmount > 0 ? invoice.discountAmount : 0) + (invoice.sgstAmount > 0 ? invoice.sgstAmount : 0) + (invoice.cgstAmount > 0 ? invoice.cgstAmount : 0) + (invoice.igstAmount > 0 ? invoice.igstAmount : 0)).toFixed(2)}</span>
+                      <span>₹${(invoice.totalAmount - invoice.discountAmount + invoice.transportCharges + invoice.sgstAmount + invoice.cgstAmount + invoice.igstAmount).toFixed(2)}</span>
                     </div>`
                   : ''
               }

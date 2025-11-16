@@ -607,6 +607,18 @@ export default function Invoices() {
                        </div>
                      </>
                    )}
+                   {viewInvoice.transportCharges > 0 && (
+                     <>
+                       <div className="flex justify-between text-green-600">
+                         <span>Transport Charges:</span>
+                         <span>{formatCurrency(viewInvoice.transportCharges)}</span>
+                       </div>
+                       <div className="flex justify-between border-t pt-2">
+                         <span>Subtotal After Transport:</span>
+                         <span className="font-medium">{formatCurrency(viewInvoice.totalAmount - viewInvoice.discountAmount + viewInvoice.transportCharges)}</span>
+                       </div>
+                     </>
+                   )}
                    {viewInvoice.sgstAmount > 0 && (
                      <div className="flex justify-between">
                        <span>SGST ({viewInvoice.sgstRate}%):</span>
